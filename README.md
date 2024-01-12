@@ -1,34 +1,19 @@
-# TypeSpeed Framework
+# Script Boot 
 
-[![typescript](https://badgen.net/badge/icon/TypeScript?icon=typescript&label)](https://www.npmjs.com/package/typespeed)
-[![npm](https://badgen.net/npm/v/typespeed?color=cyan)](https://www.npmjs.com/package/typespeed)
-[![publis size](https://badgen.net/packagephobia/publish/typespeed?color=green)](https://www.npmjs.com/package/typespeed)
-[![downloads](https://badgen.net/npm/dt/typespeed?color=pink)](https://www.npmjs.com/package/typespeed)
-[![license](https://badgen.net/github/license/speedphp/typespeed)](https://github.com/SpeedPHP/typespeed/blob/main/LICENSE)
+## Description 
 
-## 特点
+## Feature
 
-
-
-## 快速开始
-
-```sh
-nodemon
-```
-
-### 环境要求
-
-* node v16+
-
-* typescript
-  ```sh
-  npm install typescript@latest -g
+## Usage 
+- @App: The Entrypoint of the application.
+  1. Scan and load all files.
+  2. Instantiate Main and then call main().
+- @Bean: The annotation to mark a class as bean, then save this class to the bean factory.
+- BeanFactory: The factory is a Map to store all beans. The bean in the factory would be the *last* class that called the @Bean annotation. 
   ```
-
-### 安装
-
-## 使用
-
-## 开源协议
-
-[MIT](LICENSE) © speedphp
+  Map(2) {
+    'ServerFactory' => [Function: getServer],
+    'LogFactory' => [Function: createLog]
+  }
+  ```
+- ExpressServer: Using Express.js to create a server, and import middlewares.

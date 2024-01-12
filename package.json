@@ -5,10 +5,10 @@
   "author": "speedphp",
   "license": "MIT License",
   "scripts": {
-    "dev" : "nodemon",
-    "test" : "ts-node test/main.ts",
-    "start" :"ts-node --transpile-only test/main.ts",
-    "build" : "tsc -p ."
+    "dev": "nodemon",
+    "test": "ts-node test/main.ts",
+    "start": "ts-node --transpile-only test/main.ts",
+    "build": "tsc -p ."
   },
   "main": "dist/speed.js",
   "homepage": "https://github.com/speedphp/typespeed#readme",
@@ -18,9 +18,11 @@
   },
   "dependencies": {
     "@types/node": "^18.0.6",
+    "express": "^4.18.2",
     "reflect-metadata": "^0.1.13",
+    "shelljs": "^0.8.5",
+    "tracer": "^1.1.6",
     "typescript": "^4.7.4",
-    "walk-sync":"^3.0.0",
-    "tracer":"^1.1.6"
+    "walk-sync": "^3.0.0"
   }
 }

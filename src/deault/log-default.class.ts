@@ -1,8 +1,8 @@
-import { bean, onClass } from "../src/speed";
-import LogFactory from "./log-factory.class";
+import { Bean, OnClass } from "../script-boot";
+import LogFactory from "../factory/log-factory.class";
 
 export default class LogDefault implements LogFactory {
-  @bean
+  @Bean
   createLog(): LogFactory {
     return new LogDefault();
   }
