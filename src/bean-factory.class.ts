@@ -5,6 +5,7 @@ export default class BeanFactory {
     public static putBean(mappingClass: Function, beanClass: any): any {
         this.beanMapper.set(mappingClass.name, beanClass);
         console.log('BeanFactory: putBean: ' + mappingClass.name + ' -> ' + beanClass.name)
+        console.log(this.beanMapper);
     }
     public static getBean(mappingClass: Function): any {
         return this.beanMapper.get(mappingClass.name);

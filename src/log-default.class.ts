@@ -1,7 +1,6 @@
 import { bean, onClass } from "../src/speed";
 import LogFactory from "./log-factory.class";
 
-@onClass
 export default class LogDefault implements LogFactory {
   @bean
   createLog(): LogFactory {
