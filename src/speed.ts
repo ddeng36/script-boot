@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import BeanFactory from "./bean-factory.class";
-import { LogFactory } from "./log-factory.interface";
+import LogFactory from "./log-factory.class";
 
 /**
  * 
@@ -8,18 +8,19 @@ import { LogFactory } from "./log-factory.interface";
  * @returns new constructor, which logs the time when the decorator is called.
  * @description To log the time when the decorator is called.
 */
-function onClass<T extends { new (...args: any[]): {} }>(constructor: T) {
+function onClass<T extends { new(...args: any[]): {} }>(constructor: T) {
     console.log('Decorator: onClass: ' + constructor.name);
-  return class extends constructor {
-    constructor(...args) {
-      super(...args);
-      console.log(this.name)
-    }
-  };
+    return class extends constructor {
+        constructor(...args) {
+            super(...args);
+        }
+    };
 }
 
-function bean(target: any, propertyName: string, descriptor: PropertyDescriptor) {    console.log('Decorator: bean: ' + target.constructor.name + '.' + propertyName);
+function bean(target: any, propertyName: string, descriptor: PropertyDescriptor) {
+    console.log('Decorator: bean: ' + target.constructor.name + '.' + propertyName);
     let returnType = Reflect.getMetadata("design:returntype", target, propertyName);
+    console.log('Decorator: bean: returnType.name: ' + returnType.name);
     BeanFactory.putBean(returnType, target[propertyName]);
 }
 
@@ -42,9 +43,14 @@ function inject(): any {
     }
 }
 
-function log(...args) {
-    //console.log(...args);
-    const logFactory : LogFactory = BeanFactory.getBean(LogFactory.name);
+function log(message?: any, ...optionalParams: any[]) {
+    const logBean = BeanFactory.getBean(LogFactory);
+    if(logBean) {
+        const logObject = logBean();
+        logObject.log(message, ...optionalParams);
+    }else{
+        console.log(message, ...optionalParams);
+    }
 }
 
 export { onClass, bean, autoware, inject, log };
