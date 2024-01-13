@@ -1,9 +1,9 @@
 import ServerFactory from "../src/factory/express-factory.class";
-import { App, Autoware, log } from "../src/script-boot";
-@App
+import { ScriptBootApplication, Autowired, log } from "../src/script-boot";
+@ScriptBootApplication
 class Main {
 
-    @Autoware
+    @Autowired
     public server: ServerFactory;
 
     public main() {

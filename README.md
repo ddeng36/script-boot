@@ -6,7 +6,7 @@
 
 ## Usage
 
-- @App: The Entrypoint of the application.
+- @ScriptBootApplication: The Entrypoint of the application.
   1. Scan and load all files.
   2. Instantiate Main and then call main().
 - @Bean: The annotation to mark a class as bean, then save this class to the bean factory.
@@ -17,7 +17,7 @@
     'LogFactory' => [Function: createLog]
   }
   ```
-- @Autoware: The implementation of Dependency Injection and Inversion of Control. @Bean stores class in Factory, @Autoware gets class from Factory.
+- @Autowired: The implementation of Dependency Injection and Inversion of Control. @Bean stores class in Factory, @Autowired gets class from Factory.
 
   1. To get related Bean from Factory Bean Mapper.
   2. instantiate the object, and inject it to value;
@@ -26,9 +26,9 @@
   ```
   { get: { '/first': [Function: cbFunc] }, post: {}, all: {} }
   ```
-- @Get(val: string):
-- @Post(val: string):
-- @All(val: string):
+- @GetMapping(val: string):
+- @PostMapping(val: string):
+- @RequestMapping(val: string):
 
 - ExpressServer: Using Express.js to create a server, and import middlewares.
 - Log: Using tracer to implements custom log.

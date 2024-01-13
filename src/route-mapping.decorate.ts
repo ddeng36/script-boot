@@ -10,18 +10,18 @@ const routerMapper = {
     "all": {}
 }
 
-function Get(value: string) {
+function GetMapping(value: string) {
     return function (target, propertyKey: string) {
-        console.log("@Decorator@ Get: -> " + target.constructor.name + '.' + propertyKey + '()' + ' -> ' + value);
+        console.log("@Decorator@ GetMapping: -> " + target.constructor.name + '.' + propertyKey + '()' + ' -> ' + value);
         routerMapper["get"][value] = target[propertyKey];
     }
 }
-function Post(value: string) {
+function PostMapping(value: string) {
     return function (target, propertyKey: string) {
         routerMapper["post"][value] = target[propertyKey];
     }
 }
-function All(value: string) {
+function RequestMapping(value: string) {
     return function (target, propertyKey: string) {
         routerMapper["all"][value] = target[propertyKey];
     }
@@ -42,4 +42,4 @@ function setRouter(app: express.Application) {
     console.log("{RouterMapper}:");
     console.log(routerMapper);
 }
-export { Get,Post, All, setRouter };
+export { GetMapping,PostMapping, RequestMapping, setRouter };

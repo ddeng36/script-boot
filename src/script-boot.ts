@@ -8,8 +8,8 @@ import LogFactory from "./factory/log-factory.class";
  * @param constructor 
  * @description The Entry of the application.
  */
-function App<T extends { new(...args: any[]): {} }>(constructor: T) {
-    console.log('@Decorator@: @App: -> ' + constructor.name);
+function ScriptBootApplication<T extends { new(...args: any[]): {} }>(constructor: T) {
+    console.log('@Decorator@: @ScriptBootApplication: -> ' + constructor.name);
 
     const srcDir = process.cwd() + "/src";
     const srcFiles = walkSync(srcDir, { globs: ['**/*.ts'] });
@@ -56,14 +56,28 @@ function OnClass<T extends { new(...args: any[]): {} }>(constructor: T) {
     };
 }
 
+
+/**
+ * 
+ * @param target class
+ * @param propertyName property name 
+ * @param descriptor 
+ * @description To put the bean object to the BeanFactory.
+ */
 function Bean(target: any, propertyName: string, descriptor: PropertyDescriptor) {
     let returnType = Reflect.getMetadata("design:returntype", target, propertyName);
     log('@Decorator@: @Bean: -> ' + target.constructor.name + '.' + propertyName + '()' + ': '+ returnType.name);
     BeanFactory.putBean(returnType, target[propertyName]);
 }
 
-function Autoware(target: any, propertyName: string): void {
-    log('@Decorator@: @Autoware -> ' + target.constructor.name + '.' + propertyName);
+/**
+ * 
+ * @param target class
+ * @param propertyName property name
+ * @description To new a object and inject the bean object to the property. 
+ */
+function Autowired(target: any, propertyName: string): void {
+    log('@Decorator@: @Autowired -> ' + target.constructor.name + '.' + propertyName);
     let type = Reflect.getMetadata("design:type", target, propertyName);
     Object.defineProperty(target, propertyName, {
         get: function myProperty() {
@@ -97,4 +111,4 @@ function log(message?: any, ...optionalParams: any[]) {
     }
 }
 
-export { App, OnClass, Bean, Autoware, Inject, log };
+export { ScriptBootApplication, OnClass, Bean, Autowired, Inject, log };
