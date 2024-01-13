@@ -22,7 +22,7 @@
     "reflect-metadata": "^0.1.13",
     "shelljs": "^0.8.5",
     "tracer": "^1.1.6",
-    "typescript": "^4.7.4",
+    "typescript": "^4.9.5",
     "walk-sync": "^3.0.0"
   }
 }
