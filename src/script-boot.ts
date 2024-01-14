@@ -1,8 +1,24 @@
 import "reflect-metadata";
 import * as walkSync from "walk-sync";
+import * as fs from "fs";
 import BeanFactory from "./bean-factory.class";
 import LogFactory from "./factory/log-factory.class";
+import { config } from "process";
 
+let globalConfig = {};
+const configPath = process.cwd() + "/test/config.json";
+if(fs.existsSync(configPath)) {
+    // config.json
+    globalConfig = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+    const nodeEnv = process.env.NODE_ENV || "development";
+    const envConfigFile = process.cwd() + "/test/config-" + nodeEnv + ".json";
+    // console.log(globalConfig);
+    if (fs.existsSync(envConfigFile)) {
+        // config-development.json
+        globalConfig = Object.assign(globalConfig, JSON.parse(fs.readFileSync(envConfigFile, "utf-8")));
+    }
+    // console.log(globalConfig);
+}
 /**
  * 
  * @param constructor 
@@ -146,4 +162,28 @@ function log(message?: any, ...optionalParams: any[]) {
     }
 }
 
-export { ScriptBootApplication, OnClass, Bean, Autowired, Inject, Before, After, log };
+function Value(configPath: string): any {
+    return function (target: any, propertyKey: string) {
+        log("@Decorator@ @Value: " + configPath);
+        if (globalConfig === undefined) {
+            Object.defineProperty(target, propertyKey, {
+                get: () => {
+                    return undefined;
+                }
+            });
+        } else {
+            let pathNodes = configPath.split(".");
+            let nodeValue = globalConfig;
+            for (let i = 0; i < pathNodes.length; i++) {
+                nodeValue = nodeValue[pathNodes[i]];
+            }
+            Object.defineProperty(target, propertyKey, {
+                get: () => {
+                    return nodeValue;
+                }
+            });
+        }
+    }
+}
+
+export { ScriptBootApplication, OnClass, Bean, Autowired, Inject, Before, After, log, globalConfig, Value };

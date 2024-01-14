@@ -1,0 +1,15 @@
+{
+    "server": {
+        "port": "8081"
+    },
+    "database": {
+        "host": "localhost",
+        "port": "27017",
+        "name": "test"
+    },
+    "view": {
+        "engine": "mustache",
+        "path": "./view",
+        "suffix": "html"
+    }
+}
