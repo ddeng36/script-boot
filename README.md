@@ -38,3 +38,4 @@
   2. get the current method of bean object.
   3. override the method, do something before the method is called, and then call the method.
 - @After: To do something after this function is called.
+- @Request, @Response, @RequestQuery, @RequestBody, @RequestForm, @Next
