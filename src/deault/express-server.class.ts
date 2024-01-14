@@ -1,26 +1,41 @@
 import { setRouter } from "../route-mapping.decorate";
-import ServerFactory from "../factory/express-factory.class";
+import ServerFactory from "../factory/server-factory.class";
 import { Bean, log } from "../script-boot";
 import * as express from "express";
+import * as consolidate from "consolidate";
 
 export default class ExpressServer extends ServerFactory {
     @Bean
     public getServer(): ServerFactory {
-        return new ExpressServer();
+        const server = new ExpressServer();
+        server.app = express();
+        return server;
     }
 
     public setMiddleware(middleware: any): void {
         this.middlewareList.push(middleware);
     }
     public start(port: number): void {
-        const app: express.Application = express();
         this.middlewareList.forEach(middleware => {
-            app.use(middleware);
+            this.app.use(middleware);
         });
-        setRouter(app);
-        app.listen(port, () => {
+        this.setDefaultMiddleware();
+        this.app.listen(port, () => {
             log(`Server is running on port ${port}`);
         })
+    }
+    setDefaultMiddleware() {
+        // Use template engine
+        const viewConfig = {
+            "engine": "mustache",
+            "path": "/test/view",
+            "suffix": "html"
+        };
+        this.app.engine(viewConfig["suffix"], consolidate[viewConfig["engine"]]);
+        this.app.set('view engine', viewConfig["suffix"]);
+        this.app.set('views', process.cwd() + viewConfig["path"]);
+
+        setRouter(this.app);
     }
 
 }

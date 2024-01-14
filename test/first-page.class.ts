@@ -15,4 +15,24 @@ export default class FirstPage {
     public test() {
         log("FirstPage test running");
     }
+
+    @GetMapping("/first/renderTest")
+    public renderTest(req: any, res: any) {
+        res.render("index", {name:"zzz"});
+    }
+
+    @GetMapping("/first/sendJson")
+    public sendJson() {
+        log("FirstPage sendJson running");
+        return {
+            "from" : "sendJson",
+            "to" : "Browser"
+        }
+    }
+
+    @GetMapping("/first/sendResult")
+    public sendResult() {
+        log("FirstPage sendResult running");
+        return "sendResult";
+    }
 }

@@ -13,27 +13,6 @@ const routerMapper = {
 }
 const routerParams = {};
 
-function GetMapping(value: string) {
-    return function (target, propertyKey: string) {
-        log("@Decorator@ @GetMapping: -> " + target.constructor.name + '.' + propertyKey + '()' + ' -> ' + value);
-        routerMapper["get"][value] = (...args) => {
-            let getBean = BeanFactory.getBean(target.constructor);
-            log("getBean: " + getBean);
-            log(getBean);
-            return getBean[propertyKey](...args);
-        }
-    }
-}
-function PostMapping(value: string) {
-    return function (target, propertyKey: string) {
-        routerMapper["post"][value] = target[propertyKey];
-    }
-}
-function RequestMapping(value: string) {
-    return function (target, propertyKey: string) {
-        routerMapper["all"][value] = target[propertyKey];
-    }
-}
 
 function Request(target: any, propertyKey: string, parameterIndex: number) {
     const key = [target.constructor.name, propertyKey, parameterIndex].toString();
@@ -97,17 +76,35 @@ function RequestForm(paramName: string) {
  * @description This function is used to set the router to the express application
  */
 function setRouter(app: express.Application) {
-    // [FLAG]: commit to master
-    for (let key in routerMapper["get"]) {
-        app.get(key, routerMapper["get"][key]);
-    }
-    for (let key in routerMapper["post"]) {
-        app.post(key, routerMapper["post"][key]);
-    }
-    for (let key in routerMapper["all"]) {
-        app.all(key, routerMapper["all"][key]);
-    }
+    ["get", "post", "all"].forEach(method => {
+        for (let key in routerMapper[method]) {
+            app[method](key, routerMapper[method][key]);
+            // equal to app.get('route', (res,req,next)={})
+        }
+    });
     log("{RouterMapper}:");
     log(routerMapper);
 }
+
+function mapperFunction(method: string, value: string) {
+    return (target: any, propertyKey: string) => {
+        log("@Decorator@ @" + method.toUpperCase() + "Mapping: -> " + target.constructor.name + '.' + propertyKey + '()' + ' -> ' + value);
+        routerMapper[method][value] = (req, res, next) => {
+            const routerBean = BeanFactory.getBean(target.constructor);
+            const testResult = routerBean[propertyKey](req, res, next);
+            if (typeof testResult === "object") {
+                res.json(testResult);
+            } else if (typeof testResult !== "undefined") {
+                res.send(testResult);
+            }
+            return testResult;
+        }
+    }
+}
+
+
+const GetMapping = (value: string) => mapperFunction("get", value);
+const PostMapping = (value: string) => mapperFunction("post", value);
+const RequestMapping = (value: string) => mapperFunction("all", value);
+
 export { GetMapping, PostMapping, RequestMapping, setRouter, Request, Response, Next, RequestBody, RequestParam, RequestQuery, RequestForm };
