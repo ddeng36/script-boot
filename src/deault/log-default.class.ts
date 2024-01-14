@@ -8,6 +8,6 @@ export default class LogDefault implements LogFactory {
   }
 
   public log(message?: any, ...optionalParams: any[]): void {
-    console.log("Defalt log: " + message);
+    console.log("Default log: " + message);
   }
 }

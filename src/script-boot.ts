@@ -9,7 +9,7 @@ import LogFactory from "./factory/log-factory.class";
  * @description The Entry of the application.
  */
 function ScriptBootApplication<T extends { new(...args: any[]): {} }>(constructor: T) {
-    console.log('@Decorator@: @ScriptBootApplication: -> ' + constructor.name);
+    log('@Decorator@: @ScriptBootApplication: -> ' + constructor.name);
 
     const srcDir = process.cwd() + "/src";
     const srcFiles = walkSync(srcDir, { globs: ['**/*.ts'] });
@@ -23,13 +23,13 @@ function ScriptBootApplication<T extends { new(...args: any[]): {} }>(constructo
         try {
             for (let p of srcFiles) {
                 let moduleName = p.replace(".d.ts", "").replace(".ts", "");
-                console.log("/Load File/: " + moduleName);
+                log("/Load File/: " + moduleName);
                 await import(srcDir + "/" + moduleName);
             }
 
             for (let p of testFiles) {
                 let moduleName = p.replace(".d.ts", "").replace(".ts", "");
-                console.log("/Load File/:"  + moduleName);
+                log("/Load File/: " + moduleName);
                 await import(testDir + "/" + moduleName);
             }
         } catch (err) {
@@ -43,17 +43,12 @@ function ScriptBootApplication<T extends { new(...args: any[]): {} }>(constructo
 
 /**
  * 
- * @param constructor old constructor
- * @returns new constructor, which logs the time when the @Decorator@ is called.
- * @description To log the time when the @Decorator@ is called.
+ * @param constructorFunction
+ * @description initialize the class and put the bean object to the BeanFactory.
 */
-function OnClass<T extends { new(...args: any[]): {} }>(constructor: T) {
-    log('@Decorator@: @OnClass: -> ' + constructor.name);
-    return class extends constructor {
-        constructor(...args) {
-            super(...args);
-        }
-    };
+function OnClass(constructorFunction) {
+    log('@Decorator@: @OnClass: -> ' + constructorFunction.name);
+    BeanFactory.putBean(constructorFunction, new constructorFunction());
 }
 
 
@@ -66,7 +61,7 @@ function OnClass<T extends { new(...args: any[]): {} }>(constructor: T) {
  */
 function Bean(target: any, propertyName: string, descriptor: PropertyDescriptor) {
     let returnType = Reflect.getMetadata("design:returntype", target, propertyName);
-    log('@Decorator@: @Bean: -> ' + target.constructor.name + '.' + propertyName + '()' + ': '+ returnType.name);
+    log('@Decorator@: @Bean: -> ' + target.constructor.name + '.' + propertyName + '()' + ': ' + returnType.name);
     BeanFactory.putBean(returnType, target[propertyName]);
 }
 
@@ -88,16 +83,56 @@ function Autowired(target: any, propertyName: string): void {
 }
 
 function Inject(): any {
-    console.log("@Decorator@ inject, outside the return.");
+    log("@Decorator@ @inject, outside the return.");
     return (target: any, propertyKey: string) => {
-        console.log("@Decorator@ inject, in the return, propertyKey: " + propertyKey);
+        log("@Decorator@ @inject, in the return, propertyKey: " + propertyKey);
         let type = Reflect.getMetadata("design:type", target, propertyKey);
-        console.log("@Decorator@ inject, in the return, type.name: " + type.name);
+        log("@Decorator@ @inject, in the return, type.name: " + type.name);
         return {
             get: function () {
-                return "@Decorator@ inject, in the return get function";
+                return "@Decorator@ @inject, in the return get function";
             }
         };
+    }
+}
+
+/**
+ * 
+ * @param constructorFunction 
+ * @param methodName string
+ * @description To do something before the method is called.
+ */
+function Before(constructorFunction, methodName: string) {
+    log("@Decorator@ @Before: " + constructorFunction.name + "." + methodName);
+    // 1. get the bean object
+    const targetBean = BeanFactory.getBean(constructorFunction);
+    return function (target, propertyKeys: string) {
+        // 2. get the current method of bean object
+        const currentMethod = targetBean[methodName];
+        // 3. override the method, do something before the method is called, and then call the method.
+        Object.assign(targetBean, {
+            [methodName]: function (...args) {
+                target[propertyKeys](...args);
+                log("============ Before ============")
+                currentMethod.apply(targetBean, args);
+            }
+        })
+    }
+}
+
+function After(constructorFunction, methodName: string) {
+    log("@Decorator@ @After: " + constructorFunction.name + "." + methodName);
+    const targetBean = BeanFactory.getBean(constructorFunction);
+    return function (target, propertyKeys: string) {
+        const currentMethod = targetBean[methodName];
+        Object.assign(targetBean, {
+            [methodName]: function(...args) {
+                const result = currentMethod.apply(targetBean, args);
+                const afterResult = target[propertyKeys](result);
+                log("============ After ============")
+                return afterResult ?? result;
+            }
+        })
     }
 }
 
@@ -111,4 +146,4 @@ function log(message?: any, ...optionalParams: any[]) {
     }
 }
 
-export { ScriptBootApplication, OnClass, Bean, Autowired, Inject, log };
+export { ScriptBootApplication, OnClass, Bean, Autowired, Inject, Before, After, log };

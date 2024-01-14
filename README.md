@@ -32,3 +32,9 @@
 
 - ExpressServer: Using Express.js to create a server, and import middlewares.
 - Log: Using tracer to implements custom log.
+- @OnClass: initialize the class and put the bean object to the BeanFactory.
+- @Before: To do something before the method is called.
+  1. get the bean object.
+  2. get the current method of bean object.
+  3. override the method, do something before the method is called, and then call the method.
+- @After: To do something after this function is called.

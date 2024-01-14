@@ -4,6 +4,8 @@
  * 
  */
 import * as express from "express";
+import BeanFactory from "./bean-factory.class";
+import { log } from "./script-boot";
 const routerMapper = {
     "get": {},
     "post": {},
@@ -12,8 +14,13 @@ const routerMapper = {
 
 function GetMapping(value: string) {
     return function (target, propertyKey: string) {
-        console.log("@Decorator@ GetMapping: -> " + target.constructor.name + '.' + propertyKey + '()' + ' -> ' + value);
-        routerMapper["get"][value] = target[propertyKey];
+        log("@Decorator@ @GetMapping: -> " + target.constructor.name + '.' + propertyKey + '()' + ' -> ' + value);
+        routerMapper["get"][value] = (...args) => {
+            let getBean = BeanFactory.getBean(target.constructor);
+            log("getBean: " + getBean);
+            log(getBean);
+            return getBean[propertyKey](...args);
+        }
     }
 }
 function PostMapping(value: string) {
@@ -34,12 +41,16 @@ function RequestMapping(value: string) {
  */
 function setRouter(app: express.Application) {
     // [FLAG]: commit to master
-    for (let method in routerMapper) {
-        for (let key in routerMapper[method]) {
-            app[method](key, routerMapper[method][key]);
-        }
+    for (let key in routerMapper["get"]) {
+        app.get(key, routerMapper["get"][key]);
     }
-    console.log("{RouterMapper}:");
-    console.log(routerMapper);
+    for (let key in routerMapper["post"]) {
+        app.post(key, routerMapper["post"][key]);
+    }
+    for (let key in routerMapper["all"]) {
+        app.all(key, routerMapper["all"][key]);
+    }
+    log("{RouterMapper}:");
+    log(routerMapper);
 }
-export { GetMapping,PostMapping, RequestMapping, setRouter };
+export { GetMapping, PostMapping, RequestMapping, setRouter };

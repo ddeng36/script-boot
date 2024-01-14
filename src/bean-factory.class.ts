@@ -10,10 +10,4 @@ export default class BeanFactory {
     public static getBean(mappingClass: Function): any {
         return this.beanMapper.get(mappingClass.name);
     }
-    public static getBeanFunction(mappingFunction: Function): Function {
-        return this.beanFunctionMapper.get(mappingFunction.name);
-    }
-    public static putBeanFunction(mappingFunction: Function, beanFunction: Function): void {
-        this.beanFunctionMapper.set(mappingFunction.name, beanFunction);
-    }
 }
