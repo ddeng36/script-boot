@@ -7,7 +7,7 @@ import { config } from "process";
 
 let globalConfig = {};
 const configPath = process.cwd() + "/test/config.json";
-if(fs.existsSync(configPath)) {
+if (fs.existsSync(configPath)) {
     // config.json
     globalConfig = JSON.parse(fs.readFileSync(configPath, "utf-8"));
     const nodeEnv = process.env.NODE_ENV || "development";
@@ -64,7 +64,7 @@ function ScriptBootApplication<T extends { new(...args: any[]): {} }>(constructo
 */
 function OnClass(constructorFunction) {
     log('@Decorator@: @OnClass: -> ' + constructorFunction.name);
-    BeanFactory.putBean(constructorFunction, new constructorFunction());
+    BeanFactory.putObject(constructorFunction, new constructorFunction());
 }
 
 
@@ -75,10 +75,15 @@ function OnClass(constructorFunction) {
  * @param descriptor 
  * @description To put the bean object to the BeanFactory.
  */
-function Bean(target: any, propertyName: string, descriptor: PropertyDescriptor) {
+function Bean(target: any, propertyName: string) {
     let returnType = Reflect.getMetadata("design:returntype", target, propertyName);
     log('@Decorator@: @Bean: -> ' + target.constructor.name + '.' + propertyName + '()' + ': ' + returnType.name);
-    BeanFactory.putBean(returnType, target[propertyName]);
+    const targetObject = new target.constructor();
+    BeanFactory.putBean(returnType, {
+        "target": target,
+        "propertyKey": propertyName,
+        "factory": targetObject[propertyName]()
+    });
 }
 
 /**
@@ -91,9 +96,9 @@ function Autowired(target: any, propertyName: string): void {
     log('@Decorator@: @Autowired -> ' + target.constructor.name + '.' + propertyName);
     let type = Reflect.getMetadata("design:type", target, propertyName);
     Object.defineProperty(target, propertyName, {
-        get: function myProperty() {
-            const beanObject = BeanFactory.getBean(type);
-            return beanObject()
+        get: () => {
+            const targetObject = BeanFactory.getBean(type);
+            return targetObject["factory"];
         }
     });
 }
@@ -121,7 +126,7 @@ function Inject(): any {
 function Before(constructorFunction, methodName: string) {
     log("@Decorator@ @Before: " + constructorFunction.name + "." + methodName);
     // 1. get the bean object
-    const targetBean = BeanFactory.getBean(constructorFunction);
+    const targetBean = BeanFactory.getObject(constructorFunction);
     return function (target, propertyKeys: string) {
         // 2. get the current method of bean object
         const currentMethod = targetBean[methodName];
@@ -138,11 +143,11 @@ function Before(constructorFunction, methodName: string) {
 
 function After(constructorFunction, methodName: string) {
     log("@Decorator@ @After: " + constructorFunction.name + "." + methodName);
-    const targetBean = BeanFactory.getBean(constructorFunction);
+    const targetBean = BeanFactory.getObject(constructorFunction);
     return function (target, propertyKeys: string) {
         const currentMethod = targetBean[methodName];
         Object.assign(targetBean, {
-            [methodName]: function(...args) {
+            [methodName]: function (...args) {
                 const result = currentMethod.apply(targetBean, args);
                 const afterResult = target[propertyKeys](result);
                 log("============ After ============")
@@ -151,12 +156,10 @@ function After(constructorFunction, methodName: string) {
         })
     }
 }
-
 function log(message?: any, ...optionalParams: any[]) {
-    const logBean = BeanFactory.getBean(LogFactory);
-    if (logBean) {
-        const logObject = logBean();
-        logObject.log(message, ...optionalParams);
+    const logObject = BeanFactory.getBean(LogFactory);
+    if (logObject) {
+        logObject["factory"].log(message, ...optionalParams);
     } else {
         console.log(message, ...optionalParams);
     }

@@ -1,6 +1,5 @@
-import { GetMapping, PostMapping, Upload } from "../src/route-mapping.decorate";
+import { GetMapping, Jwt, PostMapping, Upload } from "../src/route-mapping.decorate";
 import { OnClass, log } from "../src/script-boot";
-import * as util from "util"
 @OnClass
 export default class SecondPage {
     @GetMapping("/second/setCookie")
@@ -28,7 +27,8 @@ export default class SecondPage {
         res.send("upload success");
     }
 
-    @GetMapping("/form")
+    @PostMapping("/form")
+    @Jwt({ secret: "shhhhhhared-secret", algorithms: ["HS256"] })
     form(req, res) {
         res.render("upload");
     }

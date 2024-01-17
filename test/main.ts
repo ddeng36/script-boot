@@ -1,5 +1,7 @@
 import ServerFactory from "../src/factory/server-factory.class";
 import { ScriptBootApplication, Autowired, log } from "../src/script-boot";
+import * as basicAuth from "express-basic-auth"
+
 @ScriptBootApplication
 class Main {
 

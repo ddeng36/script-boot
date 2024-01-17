@@ -24,6 +24,13 @@
     "compression":"^1.7.4",
     "cookie-parser":"^1.4.6",
     "express-session":"^1.17.3",
-    "multiparty":"^4.2.3"
+    "multiparty":"^4.2.3",
+    "express-basic-auth":"^1.2.1",
+    "express-jwt":"^7.7.5",
+    "jsonwebtoken":"^8.5.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.12",
+    "ts-node": "^10.2.1"
   }
 }

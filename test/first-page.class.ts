@@ -1,7 +1,7 @@
 import { OnClass,log } from '../src/script-boot';
 import { GetMapping } from "../src/route-mapping.decorate";
 import { Request } from "../src/route-mapping.decorate";
-
+import * as jwttoken from "jsonwebtoken";
 @OnClass
 export default class FirstPage {
 
@@ -34,5 +34,15 @@ export default class FirstPage {
     public sendResult() {
         log("FirstPage sendResult running");
         return "sendResult";
+    }
+
+    @GetMapping("/login")
+    login() {
+        const token = jwttoken.sign({ foo: 'bar' }, 'shhhhhhared-secret');
+        /**
+         * 将这里获得的token，放到header的Authorization中。
+         * 值是：Bearer + token
+         */
+        return token;
     }
 }

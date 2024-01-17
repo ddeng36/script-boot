@@ -7,13 +7,14 @@ import * as multiparty from "multiparty";
 import * as express from "express";
 import BeanFactory from "./bean-factory.class";
 import { log } from "./script-boot";
+import { expressjwt } from "express-jwt";
 const routerMapper = {
     "get": {},
     "post": {},
     "all": {}
 }
 const routerParams = {};
-const uploadMapper = [];
+const routerMiddleware = {};
 
 function Request(target: any, propertyKey: string, parameterIndex: number) {
     const key = [target.constructor.name, propertyKey, parameterIndex].toString();
@@ -80,8 +81,9 @@ function setRouter(app: express.Application) {
     ["get", "post", "all"].forEach(method => {
         for (let key in routerMapper[method]) {
             let routerFunction = routerMapper[method][key];
-            if (method === "post" && uploadMapper.includes(routerFunction["name"])) {
-                app[method](key, uploadMiddleware, routerFunction["invoker"]);
+            if (routerMiddleware[routerFunction["name"]]) {
+                let args: Array<any> = [key, ...routerMiddleware[routerFunction["name"]], routerFunction["invoker"]];
+                app[method].apply(app, args);
             } else {
                 app[method](key, routerFunction["invoker"]);
 
@@ -99,7 +101,7 @@ function mapperFunction(method: string, value: string) {
             "path": value,
             "name": target.constructor.name + "#" + propertyKey,
             "invoker": (req, res) => {
-                const routerBean = BeanFactory.getBean(target.constructor);
+                const routerBean = BeanFactory.getObject(target.constructor);
                 const testResult = routerBean[propertyKey](req, res);
                 if (typeof testResult === "object") {
                     res.json(testResult);
@@ -112,7 +114,11 @@ function mapperFunction(method: string, value: string) {
     }
 }
 function Upload(target: any, propertyKey: string) {
-    uploadMapper.push(target.constructor.name + "#" + propertyKey)
+    if (routerMiddleware[target.constructor.name + "#" + propertyKey]) {
+        routerMiddleware[target.constructor.name + "#" + propertyKey].push(uploadMiddleware);
+    } else {
+        routerMiddleware[target.constructor.name + "#" + propertyKey] = [uploadMiddleware];
+    }
 }
 
 function uploadMiddleware(req, res, next) {
@@ -124,8 +130,22 @@ function uploadMiddleware(req, res, next) {
 }
 
 
+function Jwt(jwtConfig) {
+    return (target: any, propertyKey: string) => {
+        if (routerMiddleware[target.constructor.name + "#" + propertyKey]) {
+            routerMiddleware[target.constructor.name + "#" + propertyKey].push(expressjwt(jwtConfig));
+        } else {
+            routerMiddleware[target.constructor.name + "#" + propertyKey] = [expressjwt(jwtConfig)];
+        }
+    }
+}
+
+
 const GetMapping = (value: string) => mapperFunction("get", value);
 const PostMapping = (value: string) => mapperFunction("post", value);
 const RequestMapping = (value: string) => mapperFunction("all", value);
 
-export { GetMapping, PostMapping, RequestMapping, setRouter, Request, Response, Next, RequestBody, RequestParam, RequestQuery, RequestForm, Upload };
+export {
+    GetMapping, PostMapping, RequestMapping, setRouter, Request, Response, Next,
+    RequestBody, RequestParam, RequestQuery, RequestForm, Upload, Jwt
+};
