@@ -3,7 +3,6 @@ import * as walkSync from "walk-sync";
 import * as fs from "fs";
 import BeanFactory from "./bean-factory.class";
 import LogFactory from "./factory/log-factory.class";
-import { config } from "process";
 
 let globalConfig = {};
 const configPath = process.cwd() + "/test/config.json";
@@ -197,8 +196,11 @@ function Value(configPath: string): any {
         }
     }
 }
-
+function config(node: string) {
+    return globalConfig[node] || null;
+}
 export {
     ScriptBootApplication, OnClass, Bean, Autowired,
     Inject, Before, After, log, globalConfig, Value, error
+    , config
 };

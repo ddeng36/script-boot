@@ -44,3 +44,5 @@
 - @Upload: Upload file to the server.
 - @Jwt: Using jsonwebtoken to create jwt token.
 - 404 & 500 pages 
+- Jwt
+- Global Authentication

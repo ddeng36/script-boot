@@ -1,12 +1,13 @@
 import { setRouter } from "../route-mapping.decorate";
 import ServerFactory from "../factory/server-factory.class";
-import { Bean, error, log, Value } from "../script-boot";
+import { Autowired, Bean, error, log, Value } from "../script-boot";
 import * as compression from "compression";
 import * as cookieParser from "cookie-parser";
 import * as express from "express";
 import * as consolidate from "consolidate";
 import * as serveFavicon from "serve-favicon";
 import * as expressSession from "express-session";
+import AuthenticationFactory from "../factory/authentication-factory.class";
 
 export default class ExpressServer extends ServerFactory {
     @Value("view")
@@ -26,6 +27,9 @@ export default class ExpressServer extends ServerFactory {
 
     @Value("session")
     private session: object;
+
+    @Autowired
+    public authentication: AuthenticationFactory;
 
     @Bean
     public getServer(): ServerFactory {
@@ -55,11 +59,7 @@ export default class ExpressServer extends ServerFactory {
             this.app.set('view engine', viewConfig["suffix"]);
             this.app.set('views', process.cwd() + viewConfig["path"]);
         }
-        if (this.static) {
-            // Use static file
-            const staticPath = process.cwd() + this.static;
-            this.app.use(express.static(staticPath));
-        }
+
         if (this.favicon) {
             // support favicon
             const faviconPath = process.cwd() + this.favicon;
@@ -82,9 +82,18 @@ export default class ExpressServer extends ServerFactory {
         // set cookie
         this.app.use(cookieParser(this.cookieConfig["secret"] || undefined, this.cookieConfig["options"] || {}));
 
+        this.app.use(this.authentication.preHandle);
+        // Making sure that the static file need authentication
+        if (this.static) {
+            // Use static file
+            const staticPath = process.cwd() + this.static;
+            this.app.use(express.static(staticPath));
+        }
         // init router
         setRouter(this.app);
+        this.app.use(this.authentication.postHandle);
 
+        // 404 handler
         this.app.use((req, res, next) => {
             error("404 Not Found, for url: " + req.url);
             if (req.accepts('html')) {
@@ -96,7 +105,7 @@ export default class ExpressServer extends ServerFactory {
                 res.type('txt').send('Not found');
             }
         });
-
+        // error handler
         this.app.use((err, req, res, next) => {
             if (!err) {
                 next();
