@@ -10,4 +10,7 @@ export default class LogDefault implements LogFactory {
   public log(message?: any, ...optionalParams: any[]): void {
     console.log("Default log: " + message);
   }
+  public error(message?: any, ...optionalParams: any[]): void {
+    console.log("Default error: " + message);
+  }
 }

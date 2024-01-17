@@ -1,6 +1,6 @@
 import { setRouter } from "../route-mapping.decorate";
 import ServerFactory from "../factory/server-factory.class";
-import { Bean, log, Value } from "../script-boot";
+import { Bean, error, log, Value } from "../script-boot";
 import * as compression from "compression";
 import * as cookieParser from "cookie-parser";
 import * as express from "express";
@@ -84,6 +84,34 @@ export default class ExpressServer extends ServerFactory {
 
         // init router
         setRouter(this.app);
-    }
 
+        this.app.use((req, res, next) => {
+            error("404 Not Found, for url: " + req.url);
+            if (req.accepts('html')) {
+                res.render(process.cwd() + "/static/error-page/404.html");
+            } else if (req.accepts('json')) {
+                res.json({ error: 'Not found' });
+            } else {
+                // default to plain-text. send()
+                res.type('txt').send('Not found');
+            }
+        });
+
+        this.app.use((err, req, res, next) => {
+            if (!err) {
+                next();
+            }
+            error(err);
+            res.status(err.status || 500);
+            if (req.accepts('html')) {
+                res.render(process.cwd() + "/static/error-page/500.html");
+            } else if (req.accepts('json')) {
+                // respond with json
+                res.json({ error: 'Internal Server Error' });
+            } else {
+                // default to plain-text. send()
+                res.type('txt').send('Internal Server Error');
+            }
+        });
+    }
 }

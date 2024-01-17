@@ -32,4 +32,10 @@ export default class SecondPage {
     form(req, res) {
         res.render("upload");
     }
+
+
+    @GetMapping("/second/testError")
+    testError(req, res) {
+        throw new Error('Test Error');
+    }
 }

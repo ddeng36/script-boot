@@ -165,6 +165,15 @@ function log(message?: any, ...optionalParams: any[]) {
     }
 }
 
+function error(message?: any, ...optionalParams: any[]) {
+    const logObject = BeanFactory.getBean(LogFactory);
+    if (logObject) {
+        logObject["factory"].error(message, ...optionalParams);
+    } else {
+        console.error(message, ...optionalParams);
+    }
+}
+
 function Value(configPath: string): any {
     return function (target: any, propertyKey: string) {
         log("@Decorator@ @Value: " + configPath);
@@ -189,4 +198,7 @@ function Value(configPath: string): any {
     }
 }
 
-export { ScriptBootApplication, OnClass, Bean, Autowired, Inject, Before, After, log, globalConfig, Value };
+export {
+    ScriptBootApplication, OnClass, Bean, Autowired,
+    Inject, Before, After, log, globalConfig, Value, error
+};
