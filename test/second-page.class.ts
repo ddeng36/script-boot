@@ -1,6 +1,6 @@
-import { GetMapping } from "../src/route-mapping.decorate";
-import { OnClass } from "../src/script-boot";
-
+import { GetMapping, PostMapping, Upload } from "../src/route-mapping.decorate";
+import { OnClass, log } from "../src/script-boot";
+import * as util from "util"
 @OnClass
 export default class SecondPage {
     @GetMapping("/second/setCookie")
@@ -18,5 +18,18 @@ export default class SecondPage {
     testForSession(req, res) {
         req.session.view = req.session.view ? req.session.view + 1 : 1;
         return "Request session view: " + req.session.view;
+    }
+
+    @PostMapping("/upload")
+    @Upload
+    public upload(req, res) {
+        const files = req.files;
+        log(files);
+        res.send("upload success");
+    }
+
+    @GetMapping("/form")
+    form(req, res) {
+        res.render("upload");
     }
 }

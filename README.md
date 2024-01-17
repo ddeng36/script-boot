@@ -41,3 +41,4 @@
 - @Request, @Response, @RequestQuery, @RequestBody, @RequestForm, @Next
 - Template Engine: Use Consolidate and Mustache as Template Engine to SSR.
 - @Value: Just like @Autowired, but it inject string config to param.
+- @Upload: Upload file to the server.

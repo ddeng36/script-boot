@@ -3,6 +3,7 @@
  * @description This file is used to map the router to the express application
  * 
  */
+import * as multiparty from "multiparty";
 import * as express from "express";
 import BeanFactory from "./bean-factory.class";
 import { log } from "./script-boot";
@@ -12,7 +13,7 @@ const routerMapper = {
     "all": {}
 }
 const routerParams = {};
-
+const uploadMapper = [];
 
 function Request(target: any, propertyKey: string, parameterIndex: number) {
     const key = [target.constructor.name, propertyKey, parameterIndex].toString();
@@ -78,8 +79,13 @@ function RequestForm(paramName: string) {
 function setRouter(app: express.Application) {
     ["get", "post", "all"].forEach(method => {
         for (let key in routerMapper[method]) {
-            app[method](key, routerMapper[method][key]);
-            // equal to app.get('route', (res,req,next)={})
+            let routerFunction = routerMapper[method][key];
+            if (method === "post" && uploadMapper.includes(routerFunction["name"])) {
+                app[method](key, uploadMiddleware, routerFunction["invoker"]);
+            } else {
+                app[method](key, routerFunction["invoker"]);
+
+            }
         }
     });
     log("{RouterMapper}:");
@@ -89,17 +95,32 @@ function setRouter(app: express.Application) {
 function mapperFunction(method: string, value: string) {
     return (target: any, propertyKey: string) => {
         log("@Decorator@ @" + method.toUpperCase() + "Mapping: -> " + target.constructor.name + '.' + propertyKey + '()' + ' -> ' + value);
-        routerMapper[method][value] = (req, res, next) => {
-            const routerBean = BeanFactory.getBean(target.constructor);
-            const testResult = routerBean[propertyKey](req, res, next);
-            if (typeof testResult === "object") {
-                res.json(testResult);
-            } else if (typeof testResult !== "undefined") {
-                res.send(testResult);
+        routerMapper[method][value] = {
+            "path": value,
+            "name": target.constructor.name + "#" + propertyKey,
+            "invoker": (req, res) => {
+                const routerBean = BeanFactory.getBean(target.constructor);
+                const testResult = routerBean[propertyKey](req, res);
+                if (typeof testResult === "object") {
+                    res.json(testResult);
+                } else if (typeof testResult !== "undefined") {
+                    res.send(testResult);
+                }
+                return testResult;
             }
-            return testResult;
         }
     }
+}
+function Upload(target: any, propertyKey: string) {
+    uploadMapper.push(target.constructor.name + "#" + propertyKey)
+}
+
+function uploadMiddleware(req, res, next) {
+    const form = new multiparty.Form();
+    form.parse(req, (err, fields, files) => {
+        req.files = files["upload"] || undefined;
+        next();
+    });
 }
 
 
@@ -107,4 +128,4 @@ const GetMapping = (value: string) => mapperFunction("get", value);
 const PostMapping = (value: string) => mapperFunction("post", value);
 const RequestMapping = (value: string) => mapperFunction("all", value);
 
-export { GetMapping, PostMapping, RequestMapping, setRouter, Request, Response, Next, RequestBody, RequestParam, RequestQuery, RequestForm };
+export { GetMapping, PostMapping, RequestMapping, setRouter, Request, Response, Next, RequestBody, RequestParam, RequestQuery, RequestForm, Upload };
