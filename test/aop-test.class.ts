@@ -23,7 +23,6 @@ export default class AopTest {
     @After(FirstPage, "index")
     public testFirstIndexAfter(result) {
         log("AopTest testFirstIndexAfter run over, result: " + result);
-        log(result);
     }
 
 }

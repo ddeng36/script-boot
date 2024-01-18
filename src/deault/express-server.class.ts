@@ -1,5 +1,6 @@
 import { setRouter } from "../route-mapping.decorate";
 import ServerFactory from "../factory/server-factory.class";
+import AuthenticationFactory from "../factory/authentication-factory.class";
 import { Autowired, Bean, error, log, Value } from "../script-boot";
 import * as compression from "compression";
 import * as cookieParser from "cookie-parser";
@@ -7,7 +8,6 @@ import * as express from "express";
 import * as consolidate from "consolidate";
 import * as serveFavicon from "serve-favicon";
 import * as expressSession from "express-session";
-import AuthenticationFactory from "../factory/authentication-factory.class";
 
 export default class ExpressServer extends ServerFactory {
     @Value("view")

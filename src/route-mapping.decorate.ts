@@ -12,44 +12,44 @@ const routerMapper = {
     "get": {},
     "post": {},
     "all": {}
-}
+};
 const routerParams = {};
 const routerMiddleware = {};
 
 function Request(target: any, propertyKey: string, parameterIndex: number) {
     const key = [target.constructor.name, propertyKey, parameterIndex].toString();
-    log("@Decorator@ @Requset: -> " + key);
     routerParams[key] = (req, res, next) => req;
-    console.log(routerParams);
+    log("@Request -> " + target.constructor.name + '.' + propertyKey + '(' + parameterIndex + ',...)');
+    log('routerParams <- { ' + key + ': ' + routerParams[key] + '}');
 }
 
 function Response(target: any, propertyKey: string, parameterIndex: number) {
     const key = [target.constructor.name, propertyKey, parameterIndex].toString();
-    log("@Decorator@ @Response: -> " + key);
     routerParams[key] = (req, res, next) => res;
-    console.log(routerParams);
+    log("@Response -> " + target.constructor.name + '.' + propertyKey + '(' + parameterIndex + ',...)');
+    log('routerParams <- { ' + key + ': ' + routerParams[key] + '}');
 }
 
 function Next(target: any, propertyKey: string, parameterIndex: number) {
     const key = [target.constructor.name, propertyKey, parameterIndex].toString();
-    log("@Decorator@ @Next: -> " + key);
     routerParams[key] = (req, res, next) => next;
-    console.log(routerParams);
+    log("@Next -> " + target.constructor.name + '.' + propertyKey + '(' + parameterIndex + ',...)');
+    log('routerParams <- { ' + key + ': ' + routerParams[key] + '}');
 }
 
 function RequestBody(target: any, propertyKey: string, parameterIndex: number) {
     const key = [target.constructor.name, propertyKey, parameterIndex].toString();
-    log("@Decorator@ @RequestBody: -> " + key);
     routerParams[key] = (req, res, next) => req.body;
-    console.log(routerParams);
+    log("@RequestBody -> " + target.constructor.name + '.' + propertyKey + '(' + parameterIndex + ',...)');
+    log('routerParams <- { ' + key + ': ' + routerParams[key] + '}');
 }
 
 function RequestParam(target: any, propertyKey: string, parameterIndex: number) {
     const key = [target.constructor.name, propertyKey, parameterIndex].toString();
     const paramName = getParamInFunction(target[propertyKey], parameterIndex);
-    log("@Decorator@ @RequestParam: -> " + key + " -> " + paramName);
     routerParams[key] = (req, res, next) => req.params[paramName];
-    console.log(routerParams);
+    log("@RequestParam -> " + target.constructor.name + '.' + propertyKey + '(' + parameterIndex + ',...)');
+    log('routerParams <- { ' + key + ': ' + routerParams[key] + '}');
 }
 function getParamInFunction(fn: Function, index: number) {
     const code = fn.toString().replace(/((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg, '').replace(/=>.*$/mg, '').replace(/=[^,]+/mg, '');
@@ -59,24 +59,20 @@ function getParamInFunction(fn: Function, index: number) {
 function RequestQuery(target: any, propertyKey: string, parameterIndex: number) {
     const key = [target.constructor.name, propertyKey, parameterIndex].toString();
     const paramName = getParamInFunction(target[propertyKey], parameterIndex);
-    log("@Decorator@ @RequestQuery: -> " + key + " -> " + paramName);
     routerParams[key] = (req, res, next) => req.query[paramName];
-    console.log(routerParams);
+    log("@RequestQuery -> " + target.constructor.name + '.' + propertyKey + '(' + parameterIndex + ',...)');
+    log('routerParams <- { ' + key + ': ' + routerParams[key] + '}');
 }
 function RequestForm(paramName: string) {
     return (target: any, propertyKey: string, parameterIndex: number) => {
         const key = [target.constructor.name, propertyKey, parameterIndex].toString();
-        log("@Decorator@ @RequestForm: -> " + key + " -> " + paramName);
         routerParams[key] = (req, res, next) => req.body[paramName];
-        console.log(routerParams);
+        log("@RequestForm -> " + target.constructor.name + '.' + propertyKey + '(' + parameterIndex + ',...)');
+        log('routerParams <- { ' + key + ': ' + routerParams[key] + '}');
     }
 }
 
-/**
- * 
- * @param app express application
- * @description This function is used to set the router to the express application
- */
+
 function setRouter(app: express.Application) {
     ["get", "post", "all"].forEach(method => {
         for (let key in routerMapper[method]) {
@@ -90,15 +86,15 @@ function setRouter(app: express.Application) {
             }
         }
     });
-    log("{RouterMapper}:");
-    log(routerMapper);
 }
 
-function mapperFunction(method: string, value: string) {
+function mapperFunction(method: string, path: string) {
+    // if this Decorator accepts a parameter, then we should use closure save it and return a function.
     return (target: any, propertyKey: string) => {
-        log("@Decorator@ @" + method.toUpperCase() + "Mapping: -> " + target.constructor.name + '.' + propertyKey + '()' + ' -> ' + value);
-        routerMapper[method][value] = {
-            "path": value,
+        // 1. get the original function and save it in cb.
+        // 2. put cb into routerMapper according to the method and path.
+        const result = routerMapper[method][path] = {
+            "path": path,
             "name": target.constructor.name + "#" + propertyKey,
             "invoker": (req, res) => {
                 const routerBean = BeanFactory.getObject(target.constructor);
@@ -111,6 +107,8 @@ function mapperFunction(method: string, value: string) {
                 return testResult;
             }
         }
+        log("@" + method[0].toUpperCase().concat(method.slice(1)) + "Mapping -> { " + 'routerMapper["' + method + '"]["' + path + '"]: <- }');
+        console.log(result);
     }
 }
 function Upload(target: any, propertyKey: string) {
@@ -137,13 +135,16 @@ function Jwt(jwtConfig) {
         } else {
             routerMiddleware[target.constructor.name + "#" + propertyKey] = [expressjwt(jwtConfig)];
         }
+        log("@Jwt -> " + target.constructor.name + '#' + propertyKey);
+        log('routerMiddleware <- { ' + target.constructor.name + '#' + propertyKey + ': [expressjwt(jwtConfig)]}');
+        console.log(routerMiddleware);
     }
 }
 
 
-const GetMapping = (value: string) => mapperFunction("get", value);
-const PostMapping = (value: string) => mapperFunction("post", value);
-const RequestMapping = (value: string) => mapperFunction("all", value);
+const GetMapping = (path: string) => mapperFunction("get", path);
+const PostMapping = (path: string) => mapperFunction("post", path);
+const RequestMapping = (path: string) => mapperFunction("all", path);
 
 export {
     GetMapping, PostMapping, RequestMapping, setRouter, Request, Response, Next,

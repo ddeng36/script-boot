@@ -9,7 +9,6 @@ const jwtConfig: {
     algorithms: jwt.Algorithm[];
     ignore: string[];
 } = config("jwt");
-
 export default class JwtAuthentication extends AuthenticationFactory {
 
     @Bean

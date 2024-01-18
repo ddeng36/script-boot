@@ -2,18 +2,18 @@ import { OnClass,log } from '../src/script-boot';
 import { GetMapping } from "../src/route-mapping.decorate";
 import { Request } from "../src/route-mapping.decorate";
 import * as jwttoken from "jsonwebtoken";
+
 @OnClass
 export default class FirstPage {
 
     @GetMapping("/first")
-    
     public index(@Request req: any, res: any) {
-        log("FirstPage index running" + this.test());
+        log("FirstPage index running: " + this.test());
         res.send("FirstPage index running");
     }
 
     public test() {
-        log("FirstPage test running");
+        return "FirstPage test running";
     }
 
     @GetMapping("/first/renderTest")
@@ -39,10 +39,6 @@ export default class FirstPage {
     @GetMapping("/login")
     login() {
         const token = jwttoken.sign({ foo: 'bar' }, 'shhhhhhared-secret');
-        /**
-         * 将这里获得的token，放到header的Authorization中。
-         * 值是：Bearer + token
-         */
         return token;
     }
 }

@@ -4,6 +4,7 @@ import * as fs from "fs";
 import BeanFactory from "./bean-factory.class";
 import LogFactory from "./factory/log-factory.class";
 
+// config 
 let globalConfig = {};
 const configPath = process.cwd() + "/test/config.json";
 if (fs.existsSync(configPath)) {
@@ -11,73 +12,61 @@ if (fs.existsSync(configPath)) {
     globalConfig = JSON.parse(fs.readFileSync(configPath, "utf-8"));
     const nodeEnv = process.env.NODE_ENV || "development";
     const envConfigFile = process.cwd() + "/test/config-" + nodeEnv + ".json";
-    // console.log(globalConfig);
     if (fs.existsSync(envConfigFile)) {
         // config-development.json
         globalConfig = Object.assign(globalConfig, JSON.parse(fs.readFileSync(envConfigFile, "utf-8")));
     }
-    // console.log(globalConfig);
+    log("globalConfig: <- ".concat(fs.existsSync(envConfigFile) ? envConfigFile : configPath));
+    log(globalConfig);
 }
-/**
- * 
- * @param constructor 
- * @description The Entry of the application.
- */
-function ScriptBootApplication<T extends { new(...args: any[]): {} }>(constructor: T) {
-    log('@Decorator@: @ScriptBootApplication: -> ' + constructor.name);
+function config(node: string) {
+    return globalConfig[node] || null;
+}
 
+function ScriptBootApplication<T extends { new(...args: any[]): {} }>(constructor: T) {
+    log('@ScriptBootApplication -> ' + constructor.name);
+    // 1. get and import all the files under the src directory.
     const srcDir = process.cwd() + "/src";
     const srcFiles = walkSync(srcDir, { globs: ['**/*.ts'] });
-
     const testDir = process.cwd() + "/test";
     const testFiles = walkSync(testDir, { globs: ['**/*.ts'] });
-
-    // Immediately Invoked Function Expression (IIFE)
-    // Make sure application is running after all the classes are loaded.
     (async function () {
+        // Immediately Invoked Function Expression (IIFE)
+        // Make sure application is running after all the classes are loaded.
         try {
             for (let p of srcFiles) {
                 let moduleName = p.replace(".d.ts", "").replace(".ts", "");
-                log("/Load File/: " + moduleName);
+                log("Load File <- " + moduleName);
                 await import(srcDir + "/" + moduleName);
             }
 
             for (let p of testFiles) {
                 let moduleName = p.replace(".d.ts", "").replace(".ts", "");
-                log("/Load File/: " + moduleName);
+                log("Load File <- " + moduleName);
                 await import(testDir + "/" + moduleName);
             }
         } catch (err) {
             console.error(err);
         }
-        log("Start Application");
+        log("Initialize the main class");
         const main = new constructor();
         main["main"]();
     }());
 }
 
-/**
- * 
- * @param constructorFunction
- * @description initialize the class and put the bean object to the BeanFactory.
-*/
 function OnClass(constructorFunction) {
-    log('@Decorator@: @OnClass: -> ' + constructorFunction.name);
+    log('@OnClass -> ' + constructorFunction.name);
     BeanFactory.putObject(constructorFunction, new constructorFunction());
 }
 
 
-/**
- * 
- * @param target class
- * @param propertyName property name 
- * @param descriptor 
- * @description To put the bean object to the BeanFactory.
- */
 function Bean(target: any, propertyName: string) {
+    // 1. get the return type of this method.
     let returnType = Reflect.getMetadata("design:returntype", target, propertyName);
-    log('@Decorator@: @Bean: -> ' + target.constructor.name + '.' + propertyName + '()' + ': ' + returnType.name);
+    log('@Bean -> { ' + returnType.name + ': ' + target.constructor.name + '.' + propertyName + '() }');
+    // 2. new the object of the return type.
     const targetObject = new target.constructor();
+    // 3. put the object into BeanFactory.
     BeanFactory.putBean(returnType, {
         "target": target,
         "propertyKey": propertyName,
@@ -85,15 +74,12 @@ function Bean(target: any, propertyName: string) {
     });
 }
 
-/**
- * 
- * @param target class
- * @param propertyName property name
- * @description To new a object and inject the bean object to the property. 
- */
 function Autowired(target: any, propertyName: string): void {
-    log('@Decorator@: @Autowired -> ' + target.constructor.name + '.' + propertyName);
-    let type = Reflect.getMetadata("design:type", target, propertyName);
+    // 1. get the type of this property.
+    const type = Reflect.getMetadata("design:type", target, propertyName);
+    log('@Autowired -> ' + target.constructor.name + '.' + propertyName + ': ' + type.name);
+    // @Autowired -> ExpressServer.authentication: AuthenticationFactory
+    // 2. set getter function to the property, which will return the bean from BeanFactory.
     Object.defineProperty(target, propertyName, {
         get: () => {
             const targetObject = BeanFactory.getBean(type);
@@ -123,7 +109,7 @@ function Inject(): any {
  * @description To do something before the method is called.
  */
 function Before(constructorFunction, methodName: string) {
-    log("@Decorator@ @Before: " + constructorFunction.name + "." + methodName);
+    log("@Before -> " + constructorFunction.name + "." + methodName);
     // 1. get the bean object
     const targetBean = BeanFactory.getObject(constructorFunction);
     return function (target, propertyKeys: string) {
@@ -141,7 +127,7 @@ function Before(constructorFunction, methodName: string) {
 }
 
 function After(constructorFunction, methodName: string) {
-    log("@Decorator@ @After: " + constructorFunction.name + "." + methodName);
+    log("@After -> " + constructorFunction.name + "." + methodName);
     const targetBean = BeanFactory.getObject(constructorFunction);
     return function (target, propertyKeys: string) {
         const currentMethod = targetBean[methodName];
@@ -175,19 +161,23 @@ function error(message?: any, ...optionalParams: any[]) {
 
 function Value(configPath: string): any {
     return function (target: any, propertyKey: string) {
-        log("@Decorator@ @Value: " + configPath);
+        log("@Value -> " + configPath);
         if (globalConfig === undefined) {
+            log("undefined");
             Object.defineProperty(target, propertyKey, {
                 get: () => {
                     return undefined;
                 }
             });
         } else {
+            // 1. get the value from config
             let pathNodes = configPath.split(".");
             let nodeValue = globalConfig;
             for (let i = 0; i < pathNodes.length; i++) {
                 nodeValue = nodeValue[pathNodes[i]];
             }
+            log(nodeValue);
+            // 2. set the value to the property, which will return the value from config when the property is called.
             Object.defineProperty(target, propertyKey, {
                 get: () => {
                     return nodeValue;
@@ -196,9 +186,7 @@ function Value(configPath: string): any {
         }
     }
 }
-function config(node: string) {
-    return globalConfig[node] || null;
-}
+
 export {
     ScriptBootApplication, OnClass, Bean, Autowired,
     Inject, Before, After, log, globalConfig, Value, error
