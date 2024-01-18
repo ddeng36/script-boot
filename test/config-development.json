@@ -4,8 +4,10 @@
     },
     "database": {
         "host": "localhost",
-        "port": "4455",
-        "name": "test"
+        "port": "3333",
+        "database": "test",
+        "user": "root",
+        "password": "guang"
     },
     "view": {
         "engine": "mustache",

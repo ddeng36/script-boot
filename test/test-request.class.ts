@@ -12,6 +12,7 @@ export default class TestRequest {
     @GetMapping("/request/query")
     testQuery(req, res, @RequestQuery id: number) {
         log("id: " + id);
+        res.return({id});
     }
     @GetMapping("/request/param/:id")
     testParam(req, res, @RequestQuery id: number) {

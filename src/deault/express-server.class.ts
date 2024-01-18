@@ -89,7 +89,7 @@ export default class ExpressServer extends ServerFactory {
             const staticPath = process.cwd() + this.static;
             this.app.use(express.static(staticPath));
         }
-        // init router
+        // init router, set app.get, app.post, app.all to call the function in routerMapper
         setRouter(this.app);
         this.app.use(this.authentication.postHandle);
 

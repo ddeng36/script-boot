@@ -82,7 +82,6 @@ function setRouter(app: express.Application) {
                 app[method].apply(app, args);
             } else {
                 app[method](key, routerFunction["invoker"]);
-
             }
         }
     });
@@ -96,9 +95,9 @@ function mapperFunction(method: string, path: string) {
         const result = routerMapper[method][path] = {
             "path": path,
             "name": target.constructor.name + "#" + propertyKey,
-            "invoker": (req, res) => {
+            "invoker": async (req, res) => {
                 const routerBean = BeanFactory.getObject(target.constructor);
-                const testResult = routerBean[propertyKey](req, res);
+                const testResult = await routerBean[propertyKey](req, res);
                 if (typeof testResult === "object") {
                     res.json(testResult);
                 } else if (typeof testResult !== "undefined") {

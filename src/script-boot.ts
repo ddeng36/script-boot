@@ -20,7 +20,7 @@ if (fs.existsSync(configPath)) {
     log(globalConfig);
 }
 function config(node: string) {
-    return globalConfig[node] || null;
+    return globalConfig[node] ?? {};
 }
 
 function ScriptBootApplication<T extends { new(...args: any[]): {} }>(constructor: T) {

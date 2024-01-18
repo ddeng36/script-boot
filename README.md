@@ -90,3 +90,5 @@
 - 404 & 500 pages 
 
 - Global Authentication
+
+- @Select, @Insert, @Update, @Delete: Using sql to operate database.
