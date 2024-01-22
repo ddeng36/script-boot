@@ -92,3 +92,5 @@
 - Global Authentication
 
 - @Select, @Insert, @Update, @Delete: Using sql to operate database.
+
+- SQL Injection: don't trust any input text, which may cause injection problem. Use sql-template to escape the input text.
