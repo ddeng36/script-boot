@@ -83,7 +83,7 @@ function Autowired(target: any, propertyName: string): void {
     Object.defineProperty(target, propertyName, {
         get: () => {
             const targetObject = BeanFactory.getBean(type);
-            return targetObject["factory"];
+                 return targetObject["factory"];
         }
     });
 }

@@ -100,8 +100,14 @@
 - @ResultType: set the result type of sql query.
   1. set the result type of sql query and new dto into resultTypeMap.(In @Select, we have to create a new object by Object.create() to avoid the same reference, even if we have new object in @ResultType.)
   2. when selecting data, use the result type to transform the result.
-- resultTypeMap
+- resultTypeMap: a map to store the result type of sql query.
+Insert, Update, Delete could affect the database, so the result of Select in the cache may not be the latest data. We should flush the cache when we insert, update or delete data.
 ```
   Map => 
     "TestDatabase,findUsers", {id: undefined, name: undefined}
 ```
+- tableVersionMap: Improve the flush cache function.We can save table name and version in tableVersionMap. Every time we insert, update or delete data, the version of table will be increased by 1. So when selecting data, we can check the version of table and compare it with the version in tableVersionMap. If they are not equal, then flush.
+```
+  Map(1) { 'user' => 2 }
+```
+@Cache

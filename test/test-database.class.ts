@@ -1,15 +1,21 @@
 import { log } from "console";
-import { Delete, Insert, Param, Select, Update, ResultType } from "../src/database/query-decorator";
+import { Delete, Insert, Param, Select, Update, ResultType, Cache } from "../src/database/query-decorator";
 import { GetMapping } from "../src/route-mapping.decorate";
-import { OnClass } from "../src/script-boot";
-import  UserDto  from "./entities/user-dto.class";
+import { Autowired, OnClass } from "../src/script-boot";
+import UserDto from "./entities/user-dto.class";
+import CacheFactory from "../src/factory/cache-factory.class";
 
 @OnClass
 export default class TestDatabase {
+    @Autowired
+    private cacheBean: CacheFactory;
+
     @GetMapping("/db/insert")
     async insert(req, res) {
-        this.addRow("newname",36);
-        await res.send("Insert");
+        const id = req.query.id || 1;
+        const newId = await this.addRow("new name " + id, id);
+        log("Insert newId: " + newId);
+        res.send("Insert success");
     }
 
     @GetMapping("/db/insertObject")
@@ -52,12 +58,25 @@ export default class TestDatabase {
         log(users);
         res.send(users);
     }
-    @Insert("Insert into `user` (id, name) values (#{id}, #{name})")
-    private async addRow(@Param("name") newName:string, @Param("id") id: number) { }
+
+    @GetMapping("/db/set-cache")
+    testCache(req, res) {
+        this.cacheBean.set("test", req.query.value || "test");
+        res.send("set cache");
+    }
+
+    @GetMapping("/db/get-cache")
+    getCache(req, res) {
+        const value = this.cacheBean.get("test");
+        res.send(value);
+    }
 
     @Insert("Insert into `user` (id, name) values (#{id}, #{name})")
-    private async addRowByObject(myParams: object) {}
-    
+    private async addRow(@Param("name") newName: string, @Param("id") id: number) { }
+
+    @Insert("Insert into `user` (id, name) values (#{id}, #{name})")
+    private async addRowByObject(myParams: object) { }
+
     @Update("Update `user` set name = 'test2' where id = 1")
     private async updateRow() { }
 
@@ -67,10 +86,11 @@ export default class TestDatabase {
     @Select("Select * from `user`")
     private async selectRow() { }
 
+    @Cache(1800)
     @Select("Select * from `user` where id = #{id}")
     private async findRow(@Param("id") id: number) { }
 
     @ResultType(UserDto)
     @Select("Select * from `user`")
-    private findUsers(): UserDto[] {return;}
+    private findUsers(): UserDto[] { return; }
 }
