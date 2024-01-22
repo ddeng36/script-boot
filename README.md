@@ -92,5 +92,16 @@
 - Global Authentication
 
 - @Select, @Insert, @Update, @Delete: Using sql to operate database.
+  1. Turn the function it'self into a sqlQuery function by setting descriptor.value.
+  2. Call the sqlQuery function to replace the sql template with the param.
+  3. Execute the sql query and return the result.
 
 - SQL Injection: don't trust any input text, which may cause injection problem. Use sql-template to escape the input text.
+- @ResultType: set the result type of sql query.
+  1. set the result type of sql query and new dto into resultTypeMap.(In @Select, we have to create a new object by Object.create() to avoid the same reference, even if we have new object in @ResultType.)
+  2. when selecting data, use the result type to transform the result.
+- resultTypeMap
+```
+  Map => 
+    "TestDatabase,findUsers", {id: undefined, name: undefined}
+```

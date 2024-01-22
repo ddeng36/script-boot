@@ -2,6 +2,7 @@ import { createPool, ResultSetHeader } from 'mysql2';
 import { config, log } from '../script-boot';
 const paramMetadataKey = Symbol("param");
 const pool = createPool(config('database')).promise();
+const resultTypeMap = new Map<string, object>();
 
 function Insert(sql: string) {
     // 1. replace it's self with a queryFunction(sql)
@@ -38,7 +39,31 @@ function Select(sql: string) {
             log("Select SQL: " + newSql);
             log("Select sqlValues: " + sqlValues);
             log("Select result: " + JSON.stringify(rows));
-            return rows;
+
+            if (Object.keys(rows).length === 0) {
+                return;
+            }
+
+            const records = [];
+            const resultType = resultTypeMap.get(
+                [target.constructor.name, propertyKey].toString(),
+            );
+            for (const rowIndex in rows) {
+                // !!! Important !!!
+                // We have to create a new object by Object.create() to avoid the same reference, even if we have new object in @ResultType.
+                const entity = Object.create(resultType);
+                Object.getOwnPropertyNames(resultType).forEach(function (propertyRow) {
+                    if (rows[rowIndex].hasOwnProperty(propertyRow)) {
+                        Object.defineProperty(
+                            entity,
+                            propertyRow,
+                            Object.getOwnPropertyDescriptor(rows[rowIndex], propertyRow),
+                        );
+                    }
+                });
+                records.push(entity);
+            }
+            return records;
         };
     }
 }
@@ -50,6 +75,13 @@ function Param(name: string) {
         existingParameters.push([name, parameterIndex]);
         Reflect.defineMetadata(paramMetadataKey, existingParameters, target, propertyKey,);
     };
+}
+
+function ResultType(dataClass) {
+    return function (target: any, propertyKey: string) {
+        resultTypeMap.set([target.constructor.name, propertyKey].toString(), new dataClass());
+        log("@ResultType -> " + '{' + target.constructor.name + propertyKey +': ' + dataClass.name + '}');
+    }
 }
 
 async function queryForExecute(sql: string, args: any[], target, propertyKey: string): Promise<ResultSetHeader> {
@@ -90,4 +122,4 @@ function convertSQLParams(args: any[], target: any, propertyKey: string, decorat
     return [decoratorSQL, queryValues];
 }
 
-export { Insert, Update, Update as Delete, Select, Param };
+export { Insert, Update, Update as Delete, Select, Param, ResultType };

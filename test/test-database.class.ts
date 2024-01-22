@@ -1,7 +1,8 @@
 import { log } from "console";
-import { Delete, Insert, Param, Select, Update } from "../src/database/query-decorator";
+import { Delete, Insert, Param, Select, Update, ResultType } from "../src/database/query-decorator";
 import { GetMapping } from "../src/route-mapping.decorate";
 import { OnClass } from "../src/script-boot";
+import  UserDto  from "./entities/user-dto.class";
 
 @OnClass
 export default class TestDatabase {
@@ -44,8 +45,13 @@ export default class TestDatabase {
         log("select rows: " + row);
         res.send(row);
     }
-
-
+    @GetMapping("/db/select-user")
+    async selectUser(req, res) {
+        const users: UserDto[] = await this.findUsers();
+        log("select users: ->");
+        log(users);
+        res.send(users);
+    }
     @Insert("Insert into `user` (id, name) values (#{id}, #{name})")
     private async addRow(@Param("name") newName:string, @Param("id") id: number) { }
 
@@ -63,4 +69,8 @@ export default class TestDatabase {
 
     @Select("Select * from `user` where id = #{id}")
     private async findRow(@Param("id") id: number) { }
+
+    @ResultType(UserDto)
+    @Select("Select * from `user`")
+    private findUsers(): UserDto[] {return;}
 }
