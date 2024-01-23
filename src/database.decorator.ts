@@ -1,11 +1,9 @@
 import CacheFactory from './factory/cache-factory.class';
 import { createPool, ResultSetHeader } from 'mysql2';
 import { config, log,getBean } from './script-boot';
-import * as lodash from 'lodash';
+import DataSourceFactory from './factory/data-source-factory.class';
 
-const db_instances = {}
 const paramMetadataKey = Symbol("param");
-const pool = createPool(config('database')).promise();
 const resultTypeMap = new Map<string, object>();
 const cacheDefinedMap = new Map<string, number>();
 const tableVersionMap = new Map<string, number>();
@@ -114,13 +112,15 @@ async function queryForExecute(sql: string, args: any[], target, propertyKey: st
 
 // For insert, update, delete
 async function actionExecute(newSql, sqlValues): Promise<ResultSetHeader> {
-    const [result] = await pool.query(newSql, sqlValues);
+    const writeConnection = await getBean(DataSourceFactory).writeConnection();
+    const [result] = await writeConnection.query(newSql, sqlValues);
     log("Execute result: " + JSON.stringify(result));
     return <ResultSetHeader>result;
 }
 // For select
 async function actionQuery(newSql, sqlValues, dataClassType?) {
-    const [rows] = await pool.query(newSql, sqlValues);
+    const readConnection = await getBean(DataSourceFactory).readConnection();
+    const [rows] = await readConnection.query(newSql, sqlValues);
     if (rows === null || Object.keys(rows).length === 0 || !dataClassType) {
         return rows;
     }

@@ -1,17 +1,26 @@
 {
-    "server": {
-        "port": "8080"
+  "server": {
+    "port": "8080"
+  },
+  "database": {
+    "master": {
+      "host": "localhost",
+      "port": "3333",
+      "database": "test",
+      "user": "root",
+      "password": "guang"
     },
-    "database": {
-        "host": "localhost",
-        "port": "3333",
-        "database": "test",
-        "user": "root",
-        "password": "guang"
-    },
-    "view": {
-        "engine": "mustache",
-        "path": "/test/view",
-        "suffix": "html"
+    "slave": {
+      "host": "localhost",
+      "port": "3334",
+      "database": "test",
+      "user": "root",
+      "password": "guang"
     }
+  },
+  "view": {
+    "engine": "mustache",
+    "path": "/test/view",
+    "suffix": "html"
+  }
 }

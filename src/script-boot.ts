@@ -121,8 +121,11 @@ function Autowired(target: any, propertyKey: string): void {
             log("targetObject: <- " + type.name);
             if (targetObject === undefined) {
                 // 3. if the bean is not in BeanFactory, then create a new object of this type and put it into BeanFactory.
-                log("new " + type.name + "()");
-                return new type();
+                const resourceKey = [target.constructor.name, propertyKey, type.name].toString();
+                if (!resourceObjects[resourceKey]) {
+                    resourceObjects[resourceKey] = new type();
+                }
+                return resourceObjects[resourceKey];
             }
             return targetObject["factory"];
         }

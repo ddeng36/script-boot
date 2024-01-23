@@ -8,6 +8,9 @@ export default class ReadWriteDB extends DataSourceFactory {
 
     @Bean
     public getDataSource(): DataSourceFactory {
+        if (!config("database")) {
+            return null;
+        }
         return new ReadWriteDB();
     }
 
@@ -27,8 +30,8 @@ export default class ReadWriteDB extends DataSourceFactory {
             }
         } else {
             // Only one connection
-            this.readSession = this.getConnectionByConfig(dbConfig);
-            this.writeSession = [this.readSession];
+            this.writeSession = this.getConnectionByConfig(dbConfig);
+            this.readSession = [this.writeSession];
         }
     }
 
@@ -47,7 +50,8 @@ export default class ReadWriteDB extends DataSourceFactory {
 
     public readConnection() {
         // Randomly choose one
-        return this.readSession[Math.random() * this.readSession.length]
+        console.log(Math.random() * this.readSession.length)
+        return this.readSession[Math.floor(Math.random() * this.readSession.length)];
     }
     public writeConnection() {
         return this.writeSession;

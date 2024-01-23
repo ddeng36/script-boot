@@ -78,7 +78,9 @@ export default class ExpressServer extends ServerFactory {
             }
             this.app.use(expressSession(sessionConfig));
         }
-
+        this.app.use(express.urlencoded({ extended: true }));
+        this.app.use(express.json());
+        
         // set cookie
         this.app.use(cookieParser(this.cookieConfig["secret"] || undefined, this.cookieConfig["options"] || {}));
 

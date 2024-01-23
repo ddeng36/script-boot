@@ -93,7 +93,7 @@ function mapperFunction(method: string, path: string) {
         // 2. put cb into routerMapper according to the method and path.
         const result = routerMapper[method][path] = {
             "path": path,
-            "name": target.constructor.name + "#" + propertyKey,
+            "name": [target.constructor.name, propertyKey].toString(),
             "invoker": async (req, res) => {
                 const routerBean = getController(target.constructor);
                 const testResult = await routerBean[propertyKey](req, res);
@@ -110,10 +110,11 @@ function mapperFunction(method: string, path: string) {
     }
 }
 function Upload(target: any, propertyKey: string) {
-    if (routerMiddleware[target.constructor.name + "#" + propertyKey]) {
-        routerMiddleware[target.constructor.name + "#" + propertyKey].push(uploadMiddleware);
+    const key = [target.constructor.name, propertyKey].toString();
+    if (routerMiddleware[key]) {
+        routerMiddleware[key].push(uploadMiddleware);
     } else {
-        routerMiddleware[target.constructor.name + "#" + propertyKey] = [uploadMiddleware];
+        routerMiddleware[key] = [uploadMiddleware];
     }
 }
 
@@ -128,13 +129,14 @@ function uploadMiddleware(req, res, next) {
 
 function Jwt(jwtConfig) {
     return (target: any, propertyKey: string) => {
-        if (routerMiddleware[target.constructor.name + "#" + propertyKey]) {
-            routerMiddleware[target.constructor.name + "#" + propertyKey].push(expressjwt(jwtConfig));
+        const key = [target.constructor.name, propertyKey].toString();
+        if (routerMiddleware[key]) {
+            routerMiddleware[key].push(expressjwt(jwtConfig));
         } else {
-            routerMiddleware[target.constructor.name + "#" + propertyKey] = [expressjwt(jwtConfig)];
+            routerMiddleware[key] = [expressjwt(jwtConfig)];
         }
         log("@Jwt -> " + target.constructor.name + '#' + propertyKey);
-        log('routerMiddleware <- { ' + target.constructor.name + '#' + propertyKey + ': [expressjwt(jwtConfig)]}');
+        log('routerMiddleware <- { ' + key + ': [expressjwt(jwtConfig)]}');
         console.log(routerMiddleware);
     }
 }
