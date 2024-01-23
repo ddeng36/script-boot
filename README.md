@@ -36,7 +36,7 @@
   1. Get the type (Factory class) of the property by Reflect.getMetadata().
   2. Set the getter function to this property by Object.defineProperty().
   3. When the property is called, get bean from Factory.
-- @Autowird: **Directly new a object with parameters**. The implementation of Dependency Injection and Inversion of Control.
+- @Autowird/@Resource: **Directly new a object with parameters**,**Design pattern: Singleton**. The implementation of Dependency Injection and Inversion of Control.
 
 - RouterMapper: Mapping the route to related callback function.
   ```
@@ -118,3 +118,6 @@ Insert, Update, Delete could affect the database, so the result of Select in the
 @Cache
 
 ORM: Object Relational Mapping, map the object to table. Developers don't need to write sql query. It's different from @Select, because it's not a sql query.
+
+Data Source: Single Master, Mater-Slave, Master-MultiSlaves. Master is responsible for write, Slaves are responsible for read. Master will sync data to Slaves.
+Connection Pool: When connection to db is created, it will be put into the pool. When we need to use db, we can get a connection from the pool and then execute sql query. If connection pool don't have enough connection, it will create a new one. The whole process decrease the time of connection.

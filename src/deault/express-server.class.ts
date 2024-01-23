@@ -1,7 +1,7 @@
 import { setRouter } from "../route-mapping.decorate";
 import ServerFactory from "../factory/server-factory.class";
 import AuthenticationFactory from "../factory/authentication-factory.class";
-import { Inject, Bean, error, log, Value } from "../script-boot";
+import { Bean, error, log, Value, Autowired } from "../script-boot";
 import * as compression from "compression";
 import * as cookieParser from "cookie-parser";
 import * as express from "express";
@@ -28,7 +28,7 @@ export default class ExpressServer extends ServerFactory {
     @Value("session")
     private session: object;
 
-    @Inject
+    @Autowired
     public authentication: AuthenticationFactory;
 
     @Bean

@@ -1,10 +1,10 @@
 import ServerFactory from "../src/factory/server-factory.class";
-import { ScriptBootApplication, log, Inject } from "../src/script-boot";
+import { ScriptBootApplication, log, Autowired } from "../src/script-boot";
 
 @ScriptBootApplication
 class Main {
 
-    @Inject
+    @Autowired
     public server: ServerFactory;
 
     public main() {

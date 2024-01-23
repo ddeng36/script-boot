@@ -3,11 +3,20 @@
     "port": "8081"
   },
   "database": {
-    "host": "localhost",
-    "port": "3333",
-    "name": "test",
-    "user": "root",
-    "password": "guang"
+    "master": {
+      "host": "localhost",
+      "port": "3333",
+      "name": "test",
+      "user": "root",
+      "password": "guang"
+    },
+    "slave": {
+      "host": "localhost",
+      "port": "3334",
+      "name": "test",
+      "user": "root",
+      "password": "guang"
+    }
   },
   "view": {
     "engine": "pug",

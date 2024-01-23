@@ -5,8 +5,7 @@
  */
 import * as multiparty from "multiparty";
 import * as express from "express";
-import BeanFactory from "./bean-factory.class";
-import { log } from "./script-boot";
+import { log, getController } from "./script-boot";
 import { expressjwt } from "express-jwt";
 const routerMapper = {
     "get": {},
@@ -96,7 +95,7 @@ function mapperFunction(method: string, path: string) {
             "path": path,
             "name": target.constructor.name + "#" + propertyKey,
             "invoker": async (req, res) => {
-                const routerBean = BeanFactory.getObject(target.constructor);
+                const routerBean = getController(target.constructor);
                 const testResult = await routerBean[propertyKey](req, res);
                 if (typeof testResult === "object") {
                     res.json(testResult);

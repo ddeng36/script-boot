@@ -1,8 +1,12 @@
 import "reflect-metadata";
 import * as walkSync from "walk-sync";
 import * as fs from "fs";
-import BeanFactory from "./bean-factory.class";
 import LogFactory from "./factory/log-factory.class";
+
+// Map
+const resourceObjects = new Map<string, object>();
+const beanMapper: Map<string, any> = new Map<string, any>();
+const objectMapper: Map<string, any> = new Map<string, any>();
 
 // config 
 let globalConfig = {};
@@ -56,9 +60,14 @@ function ScriptBootApplication<T extends { new(...args: any[]): {} }>(constructo
 
 function Controller(constructorFunction) {
     log('@Controller -> ' + constructorFunction.name);
-    BeanFactory.putObject(constructorFunction, new constructorFunction());
+    objectMapper.set(constructorFunction.name, new constructorFunction());
+    log("objectMapper: <- ");
+    log("{ "+ constructorFunction.name + ": " + objectMapper.get(constructorFunction.name) + " }");
 }
-
+function getController(constructorFunction) {
+    log("getController: <- " + constructorFunction.name);
+    return objectMapper.get(constructorFunction.name);
+}
 
 function Bean(target: any, propertyName: string) {
     // 1. get the return type of this method.
@@ -67,25 +76,40 @@ function Bean(target: any, propertyName: string) {
     // 2. new the object of the return type.
     const targetObject = new target.constructor();
     // 3. put the object into BeanFactory.
-    BeanFactory.putBean(returnType, {
+    beanMapper.set(returnType.name, {
         "target": target,
         "propertyKey": propertyName,
         "factory": targetObject[propertyName]()
     });
+    log("beanMapper: <- ");
+    log("{ " + returnType.name + ": " + beanMapper.get(returnType.name)["factory"] + " }");
+}
+function getBean(mappingClass: Function): any {
+    const bean = beanMapper.get(mappingClass.name);
+    log("getBean: <- " + mappingClass.name);
+    return bean["factory"];
 }
 
-function Autowired(...args): any {
+function Resource(...args): any {
+    // Resource is Aotuwired,
     return (target: any, propertyKey: string) => {
+        // 1. get the type of this property.
         const type = Reflect.getMetadata("design:type", target, propertyKey);
+        // 2. set getter function to the property, which will directly return the new object.
         Object.defineProperty(target, propertyKey, {
             get: () => {
-                return new type(...args);
+                // Singleton 
+                const resourceKey = [target.constructor.name, propertyKey, type.name].toString();
+                if (!resourceObjects[resourceKey]) {
+                    resourceObjects[resourceKey] = new type(...args);
+                }
+                return resourceObjects[resourceKey];
             }
         });
     }
 }
 
-function Inject(target: any, propertyKey: string): void {
+function Autowired(target: any, propertyKey: string): void {
     // 1. get the type of this property.
     let type = Reflect.getMetadata("design:type", target, propertyKey);
     log('@Inject -> ' + target.constructor.name + '.' + propertyKey + ': ' + type.name);
@@ -93,8 +117,11 @@ function Inject(target: any, propertyKey: string): void {
     // Singleton
     Object.defineProperty(target, propertyKey, {
         get: () => {
-            const targetObject = BeanFactory.getBean(type);
+            const targetObject = beanMapper.get(type.name);
+            log("targetObject: <- " + type.name);
             if (targetObject === undefined) {
+                // 3. if the bean is not in BeanFactory, then create a new object of this type and put it into BeanFactory.
+                log("new " + type.name + "()");
                 return new type();
             }
             return targetObject["factory"];
@@ -111,7 +138,7 @@ function Inject(target: any, propertyKey: string): void {
 function Before(constructorFunction, methodName: string) {
     log("@Before -> " + constructorFunction.name + "." + methodName);
     // 1. get the bean object
-    const targetBean = BeanFactory.getObject(constructorFunction);
+    const targetBean = getController(constructorFunction);
     return function (target, propertyKeys: string) {
         // 2. get the current method of bean object
         const currentMethod = targetBean[methodName];
@@ -128,7 +155,7 @@ function Before(constructorFunction, methodName: string) {
 
 function After(constructorFunction, methodName: string) {
     log("@After -> " + constructorFunction.name + "." + methodName);
-    const targetBean = BeanFactory.getObject(constructorFunction);
+    const targetBean = getController(constructorFunction);
     return function (target, propertyKeys: string) {
         const currentMethod = targetBean[methodName];
         Object.assign(targetBean, {
@@ -142,7 +169,7 @@ function After(constructorFunction, methodName: string) {
     }
 }
 function log(message?: any, ...optionalParams: any[]) {
-    const logObject = BeanFactory.getBean(LogFactory);
+    const logObject = beanMapper.get(LogFactory.name);
     if (logObject) {
         logObject["factory"].log(message, ...optionalParams);
     } else {
@@ -151,7 +178,7 @@ function log(message?: any, ...optionalParams: any[]) {
 }
 
 function error(message?: any, ...optionalParams: any[]) {
-    const logObject = BeanFactory.getBean(LogFactory);
+    const logObject = beanMapper.get(LogFactory.name);
     if (logObject) {
         logObject["factory"].error(message, ...optionalParams);
     } else {
@@ -188,7 +215,7 @@ function Value(configPath: string): any {
 }
 
 export {
-    ScriptBootApplication, Controller, Bean, Autowired,
-    Inject, Before, After, log, globalConfig, Value, error
-    , config
+    ScriptBootApplication, Controller, Bean, Resource,
+    Autowired, Before, After, log, globalConfig, Value, error
+    , config, getBean, getController
 };

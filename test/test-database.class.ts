@@ -1,13 +1,13 @@
 import { log } from "console";
 import { Delete, Insert, Param, Select, Update, ResultType, Cache } from "../src/database/crud-decorator";
 import { GetMapping } from "../src/route-mapping.decorate";
-import { Inject, Controller } from "../src/script-boot";
+import { Autowired, Controller } from "../src/script-boot";
 import UserDto from "./entities/user-dto.class";
 import CacheFactory from "../src/factory/cache-factory.class";
 
 @Controller
 export default class TestDatabase {
-    @Inject
+    @Autowired
     private cacheBean: CacheFactory;
 
     @GetMapping("/db/insert")
