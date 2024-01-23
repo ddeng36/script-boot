@@ -121,3 +121,5 @@ ORM: Object Relational Mapping, map the object to table. Developers don't need t
 
 Data Source: Single Master, Mater-Slave, Master-MultiSlaves. Master is responsible for write, Slaves are responsible for read. Master will sync data to Slaves.
 Connection Pool: When connection to db is created, it will be put into the pool. When we need to use db, we can get a connection from the pool and then execute sql query. If connection pool don't have enough connection, it will create a new one. The whole process decrease the time of connection.
+
+- @RabbitListener: get the channel and listen to the messages.

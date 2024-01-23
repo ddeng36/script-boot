@@ -18,6 +18,9 @@
       "password": "guang"
     }
   },
+  "rabbitmq":{
+    "port": "5670"
+  },
   "view": {
     "engine": "mustache",
     "path": "/test/view",

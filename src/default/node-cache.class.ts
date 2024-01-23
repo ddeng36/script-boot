@@ -1,4 +1,4 @@
-import { Bean, Value } from "../../src/script-boot";
+import { Bean, Value } from "../script-boot";
 import CacheFactory from "../factory/cache-factory.class";
 import * as cache from "node-cache";
 
