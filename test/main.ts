@@ -1,13 +1,13 @@
 import ServerFactory from "../src/factory/server-factory.class";
-import { ScriptBootApplication, Autowired, log } from "../src/script-boot";
+import { ScriptBootApplication, log, Inject } from "../src/script-boot";
 
 @ScriptBootApplication
 class Main {
 
-    @Autowired
+    @Inject
     public server: ServerFactory;
 
-    public main(){
+    public main() {
         this.server.start(8080);
         log('start application');
     }

@@ -32,10 +32,11 @@
   }
   ```
 
-- @Autowired: The implementation of Dependency Injection and Inversion of Control. @Bean stores class in Factory immediately, @Autowired set getter to property, which gets class from Factory later when the property is called.
+- @Inject: **Only for Factory Bean**, **Design pattern: Singleton**, **Without parameters**. The implementation of Dependency Injection and Inversion of Control. @Bean stores class in Factory immediately, @Inject set getter to property, which gets class from Factory later when the property is called.
   1. Get the type (Factory class) of the property by Reflect.getMetadata().
   2. Set the getter function to this property by Object.defineProperty().
   3. When the property is called, get bean from Factory.
+- @Autowird: **Directly new a object with parameters**. The implementation of Dependency Injection and Inversion of Control.
 
 - RouterMapper: Mapping the route to related callback function.
   ```
@@ -67,7 +68,7 @@
 
 - Log: Using tracer to implements custom log.
 
-- @OnClass: put object to the BeanFactory.objectMapper.
+- @OnClass/@Controller: put object to the BeanFactory.objectMapper.
 
 - @Before / @After: To do something before/after the method is called, which is so called AOP(Aspect Oriented Programming).
   1. get the bean object.
@@ -111,3 +112,5 @@ Insert, Update, Delete could affect the database, so the result of Select in the
   Map(1) { 'user' => 2 }
 ```
 @Cache
+
+ORM: Object Relational Mapping, map the object to table. Developers don't need to write sql query. It's different from @Select, because it's not a sql query.

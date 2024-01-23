@@ -54,8 +54,8 @@ function ScriptBootApplication<T extends { new(...args: any[]): {} }>(constructo
     }());
 }
 
-function OnClass(constructorFunction) {
-    log('@OnClass -> ' + constructorFunction.name);
+function Controller(constructorFunction) {
+    log('@Controller -> ' + constructorFunction.name);
     BeanFactory.putObject(constructorFunction, new constructorFunction());
 }
 
@@ -74,32 +74,32 @@ function Bean(target: any, propertyName: string) {
     });
 }
 
-function Autowired(target: any, propertyName: string): void {
-    // 1. get the type of this property.
-    const type = Reflect.getMetadata("design:type", target, propertyName);
-    log('@Autowired -> ' + target.constructor.name + '.' + propertyName + ': ' + type.name);
-    // @Autowired -> ExpressServer.authentication: AuthenticationFactory
-    // 2. set getter function to the property, which will return the bean from BeanFactory.
-    Object.defineProperty(target, propertyName, {
-        get: () => {
-            const targetObject = BeanFactory.getBean(type);
-                 return targetObject["factory"];
-        }
-    });
+function Autowired(...args): any {
+    return (target: any, propertyKey: string) => {
+        const type = Reflect.getMetadata("design:type", target, propertyKey);
+        Object.defineProperty(target, propertyKey, {
+            get: () => {
+                return new type(...args);
+            }
+        });
+    }
 }
 
-function Inject(): any {
-    log("@Decorator@ @inject, outside the return.");
-    return (target: any, propertyKey: string) => {
-        log("@Decorator@ @inject, in the return, propertyKey: " + propertyKey);
-        let type = Reflect.getMetadata("design:type", target, propertyKey);
-        log("@Decorator@ @inject, in the return, type.name: " + type.name);
-        return {
-            get: function () {
-                return "@Decorator@ @inject, in the return get function";
+function Inject(target: any, propertyKey: string): void {
+    // 1. get the type of this property.
+    let type = Reflect.getMetadata("design:type", target, propertyKey);
+    log('@Inject -> ' + target.constructor.name + '.' + propertyKey + ': ' + type.name);
+    // 2. set getter function to the property, which will return the bean from BeanFactory.
+    // Singleton
+    Object.defineProperty(target, propertyKey, {
+        get: () => {
+            const targetObject = BeanFactory.getBean(type);
+            if (targetObject === undefined) {
+                return new type();
             }
-        };
-    }
+            return targetObject["factory"];
+        }
+    })
 }
 
 /**
@@ -188,7 +188,7 @@ function Value(configPath: string): any {
 }
 
 export {
-    ScriptBootApplication, OnClass, Bean, Autowired,
+    ScriptBootApplication, Controller, Bean, Autowired,
     Inject, Before, After, log, globalConfig, Value, error
     , config
 };

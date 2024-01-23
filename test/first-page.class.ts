@@ -1,9 +1,9 @@
-import { OnClass,log } from '../src/script-boot';
+import { Controller,log } from '../src/script-boot';
 import { GetMapping } from "../src/route-mapping.decorate";
 import { Request } from "../src/route-mapping.decorate";
 import * as jwttoken from "jsonwebtoken";
 
-@OnClass
+@Controller
 export default class FirstPage {
 
     @GetMapping("/first")

@@ -1,8 +1,8 @@
 import { log } from 'console';
 import { GetMapping, PostMapping, RequestBody, RequestForm, RequestQuery, Request, Response } from "../src/route-mapping.decorate";
-import { OnClass } from "../src/script-boot";
+import { Controller } from "../src/script-boot";
 
-@OnClass
+@Controller
 export default class TestRequest {
     @GetMapping("/request/res")
     testRes(@Request req, @Response res) {

@@ -66,60 +66,25 @@ function Select(sql: string) {
     return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         log("@Select -> " + target.constructor.name + "." + propertyKey);
         descriptor.value = async (...args: any[]) => {
-            let newSql = sql;
-            let sqlValues = [];
-            if (args.length > 0) {
-                [newSql, sqlValues] = convertSQLParams(args, target, propertyKey, newSql);
-            }
-            let rows;
+            const [newSql, sqlValues] = convertSQLParams(sql, target, propertyKey, args);
+            const resultType = resultTypeMap.get([target.constructor.name, propertyKey].toString());
             if (cacheBean && cacheDefinedMap.has([target.constructor.name, propertyKey].toString())) {
                 const [tableName, tableVersion] = getTableAndVersion("select", newSql);
                 log("Table version: " + tableName + ", " + tableVersion);
                 const cacheKey = JSON.stringify([tableName, tableVersion, newSql, sqlValues]);
                 if (cacheBean.get(cacheKey)) {
-                    rows = cacheBean.get(cacheKey);
                     log("Cache hit: " + cacheKey);
+                    return cacheBean.get(cacheKey);
                 } else {
-                    [rows] = await pool.query(newSql, sqlValues);
-                    log("Cache miss, set cache: " + cacheKey);
-                    const ttl = cacheDefinedMap.get([target.constructor.name, propertyKey].toString());
-                    cacheBean.set(cacheKey, rows, ttl);
+                    const rows = await actionQuery(newSql, sqlValues, resultType);
+                    cacheBean.set(cacheKey, rows, cacheDefinedMap.get([target.constructor.name, propertyKey].toString()));
+                    return rows;
                 }
             }
             else {
-                const [rows] = await pool.query(newSql, sqlValues);
-                log("No Cache")
-                log("Select SQL: " + newSql);
-                log("Select sqlValues: " + sqlValues);
-                log("Select result: " + JSON.stringify(rows));
-            }
-            if (rows === null || rows === undefined || Object.keys(rows).length === 0) {
-                return;
-            }
-
-            const records = [];
-            const resultType = resultTypeMap.get([target.constructor.name, propertyKey].toString());
-            if (!resultType) {
-                log("No @ResultType defined for " + target.constructor.name + "." + propertyKey.constructor.name);
-                return rows;
-            }
-            for (const rowIndex in rows) {
-                // !!! Important !!!
-                // We have to create a new object by Object.create() to avoid the same reference, even if we have new object in @ResultType.
-                const entity = Object.create(resultType);
-                Object.getOwnPropertyNames(resultType).forEach(function (propertyRow) {
-                    if (rows[rowIndex].hasOwnProperty(propertyRow)) {
-                        Object.defineProperty(
-                            entity,
-                            propertyRow,
-                            Object.getOwnPropertyDescriptor(rows[rowIndex], propertyRow),
-                        );
-                    }
-                });
-                records.push(entity);
-            }
-            return records;
-        };
+                return await actionQuery(newSql, sqlValues, resultType);
+            };
+        }
     }
 }
 function Param(name: string) {
@@ -140,39 +105,59 @@ function ResultType(dataClass) {
 }
 
 async function queryForExecute(sql: string, args: any[], target, propertyKey: string): Promise<ResultSetHeader> {
-    let sqlValues = [];
-    let newSql = sql;
-    if (args.length > 0) {
-        [newSql, sqlValues] = convertSQLParams(args, target, propertyKey, newSql);
-    }
-    log("newSql: " + newSql);
-    log("sqlValues: " + sqlValues);
-    const [result] = await pool.query(newSql, sqlValues);
-    return <ResultSetHeader>result;
+    const [newSql, sqlValues] = convertSQLParams(sql, target, propertyKey, args);
+    log("Execute SQL: " + newSql);
+    log("Execute sqlValues: " + sqlValues);
+    return actionExecute(newSql, sqlValues);
 }
 
-function convertSQLParams(args: any[], target: any, propertyKey: string, decoratorSQL: string,): [string, any[]] {
-    const queryValues = [];
-    let argsVal;
-    if (typeof args[0] === 'object') {
-        argsVal = new Map(
-            Object.getOwnPropertyNames(args[0]).map((valName) => [valName, args[0][valName]]),
-        );
-    } else {
-        const existingParameters: [string, number][] = Reflect.getOwnMetadata(paramMetadataKey, target, propertyKey);
-        log("existingParameters <-" + target.constructor.name + "." + propertyKey + "'s MetaData <-");
-        log(existingParameters);
-        argsVal = new Map(existingParameters.map(([argName, argIdx]) => [argName, args[argIdx]]));
+// For insert, update, delete
+async function actionExecute(newSql, sqlValues): Promise<ResultSetHeader> {
+    const [result] = await pool.query(newSql, sqlValues);
+    log("Execute result: " + JSON.stringify(result));
+    return <ResultSetHeader>result;
+}
+// For select
+async function actionQuery(newSql, sqlValues, dataClassType?) {
+    const [rows] = await pool.query(newSql, sqlValues);
+    if (rows === null || Object.keys(rows).length === 0 || !dataClassType) {
+        return rows;
     }
-    log(argsVal);
-    const regExp = /#{(\w+)}/;
-    let match;
-    while (match = regExp.exec(decoratorSQL)) {
-        log('SQL before match: ' + decoratorSQL);
-        const [replaceTag, matchName] = match;
-        decoratorSQL = decoratorSQL.replace(new RegExp(replaceTag, 'g'), '?');
-        log('SQL after match: ' + decoratorSQL);
-        queryValues.push(argsVal.get(matchName));
+    const records = [];
+    for (const rowIndex in rows) {
+        const entity = new dataClassType();
+        Object.getOwnPropertyNames(entity).forEach((propertyRow) => {
+            if (rows[rowIndex].hasOwnProperty(propertyRow)) {
+                Object.defineProperty(entity, propertyRow, Object.getOwnPropertyDescriptor(rows[rowIndex], propertyRow));
+            }
+        });
+        records.push(entity);
+    }
+    return records;
+}
+
+function convertSQLParams(decoratorSQL: string, target: any, propertyKey: string, args: any[]): [string, any[]] {
+    const queryValues = [];
+    if (args.length > 0) {
+        let argsVal;
+        if (typeof args[0] === 'object') {
+            argsVal = new Map(Object.getOwnPropertyNames(args[0]).map((valName) => [valName, args[0][valName]]));
+        } else {
+            const existingParameters: [string, number][] = Reflect.getOwnMetadata(paramMetadataKey, target, propertyKey);
+            log("existingParameters <-" + target.constructor.name + "." + propertyKey + "'s MetaData <-");
+            log(existingParameters);
+            argsVal = new Map(existingParameters.map(([argName, argIdx]) => [argName, args[argIdx]]));
+        }
+        log(argsVal);
+        const regExp = /#{(\w+)}/;
+        let match;
+        while (match = regExp.exec(decoratorSQL)) {
+            log('SQL before match: ' + decoratorSQL);
+            const [replaceTag, matchName] = match;
+            decoratorSQL = decoratorSQL.replace(new RegExp(replaceTag, 'g'), '?');
+            log('SQL after match: ' + decoratorSQL);
+            queryValues.push(argsVal.get(matchName));
+        }
     }
     return [decoratorSQL, queryValues];
 }
@@ -214,4 +199,4 @@ function getTableAndVersion(name: string, sql: string): [string, number] {
         throw new Error("can not find table name");
     }
 }
-export { Insert, Update, Delete, Select, Param, ResultType, Cache }
+export { Insert, Update, Delete, Select, Param, ResultType, Cache, actionQuery, actionExecute };

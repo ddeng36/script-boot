@@ -1,6 +1,6 @@
 import { GetMapping, Jwt, PostMapping, Upload } from "../src/route-mapping.decorate";
-import { OnClass, log } from "../src/script-boot";
-@OnClass
+import { Controller, log } from "../src/script-boot";
+@Controller
 export default class SecondPage {
     @GetMapping("/second/setCookie")
     setCookiePage(req, res) {

@@ -1,7 +1,7 @@
-import { Before, log, OnClass, After } from "../src/script-boot";
+import { Before, log, Controller, After } from "../src/script-boot";
 import FirstPage from "./first-page.class";
 
-@OnClass
+@Controller
 export default class AopTest {
 
     @Before(FirstPage, "index")
