@@ -210,7 +210,7 @@ class Model {
         if (table) this.table = table;
     }
 
-    async findAll<T>(conditions: object | string, sort: string | object = '', fields: string | [string] = '*', limit?: number | object): Promise<T[]> {
+    async findAll<T>(conditions: object | string, sort: string | object ='', fields: string | [string] = '*', limit?: number | object): Promise<T[]> {
         const { sql, values } = this.where(conditions);
         if (typeof fields !== 'string') {
             fields = fields.join(", ");

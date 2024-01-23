@@ -1,5 +1,5 @@
 import { log } from 'console';
-import { GetMapping, PostMapping, RequestBody, RequestForm, RequestQuery, Request, Response } from "../src/route-mapping.decorate";
+import { GetMapping, PostMapping, RequestBody, RequestForm, RequestQuery, Request, Response } from "../src/route.decorate";
 import { Controller } from "../src/script-boot";
 
 @Controller

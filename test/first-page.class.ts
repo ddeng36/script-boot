@@ -1,6 +1,6 @@
 import { Controller,log } from '../src/script-boot';
-import { GetMapping } from "../src/route-mapping.decorate";
-import { Request } from "../src/route-mapping.decorate";
+import { GetMapping } from "../src/route.decorate";
+import { Request } from "../src/route.decorate";
 import * as jwttoken from "jsonwebtoken";
 
 @Controller

@@ -1,4 +1,4 @@
-import { GetMapping, Jwt, PostMapping, Upload } from "../src/route-mapping.decorate";
+import { GetMapping, Jwt, PostMapping, Upload } from "../src/route.decorate";
 import { Controller, log } from "../src/script-boot";
 @Controller
 export default class SecondPage {

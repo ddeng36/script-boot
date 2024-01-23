@@ -1,6 +1,6 @@
 import { log } from "console";
-import { Delete, Insert, Param, Select, Update, ResultType, Cache } from "../src/database/crud-decorator";
-import { GetMapping } from "../src/route-mapping.decorate";
+import { Delete, Insert, Param, Select, Update, ResultType, Cache } from "../src/database.decorator";
+import { GetMapping } from "../src/route.decorate";
 import { Autowired, Controller } from "../src/script-boot";
 import UserDto from "./entities/user-dto.class";
 import CacheFactory from "../src/factory/cache-factory.class";

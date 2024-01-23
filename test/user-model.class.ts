@@ -1,19 +1,48 @@
-import { Resource, Controller,log } from "../src/script-boot";
-import Model from "../src/database/orm-decorator";
-import { GetMapping } from "../src/route-mapping.decorate";
+import { Resource, Controller, log } from "../src/script-boot";
+import { Model } from "../src/database.decorator";
+import { GetMapping } from "../src/route.decorate";
+import UserDto from "./entities/user-dto.class";
 
 @Controller
-export default class UserModel extends Model{
-    @Resource("user")
-    private userModel: UserModel;
 
-    @GetMapping("/orm/first")
-    async firstTest(req, res) {
-        log("userModel: <- ");
-        log(this.userModel);
-        const result = await this.userModel.findAll({id:1, "user_id":{$lt:10}});
-        log("result: <- ");
-        log(result);
-        res.send(result);
+export default class UserModel extends Model {
+
+
+    async getUsers() {
+        const users = await this.findAll({
+            id: { $lt: 100, $lte: 200 }
+        });
+        log("users", users);
+        return "getUsers";
+    }
+
+    async getUser(id: number) {
+        const user = await this.find({ id: id }, "");
+        log("user", user);
+        return "getUser";
+    }
+
+    async newUsers() {
+        const users = await this.create([
+            new UserDto(30, "UserDto 30"),
+            new UserDto(31, "UserDto 31"),
+            { id: 33, name: "UserDto 33" }
+        ]);
+        return "newUsers";
+    }
+
+    async remove(id: number) {
+        const result = await this.delete({ id: id });
+        return "remove rows: " + result;
+    }
+
+    async count() {
+        const result = await this.findCount("1");
+        return "we had users : " + result;
+    }
+
+    async editUser(id: number, name: string) {
+        const result = await this.update({ id: id }, { name: name });
+        return "edit user: " + result;
     }
 }

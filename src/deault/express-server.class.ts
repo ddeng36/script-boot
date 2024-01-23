@@ -1,4 +1,4 @@
-import { setRouter } from "../route-mapping.decorate";
+import { setRouter } from "../route.decorate";
 import ServerFactory from "../factory/server-factory.class";
 import AuthenticationFactory from "../factory/authentication-factory.class";
 import { Bean, error, log, Value, Autowired } from "../script-boot";
