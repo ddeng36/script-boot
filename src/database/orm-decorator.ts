@@ -23,7 +23,7 @@ export default class Model {
     }
 
     async findAll(conditions, _sort = '', fields = '*', _limit = undefined) {
-        console.log(this.where(conditions));
+        log(this.where(conditions));
         // let sort = _sort ? ' ORDER BY ' + _sort : ''
         // let [where, params] = this._where(conditions)
         // let sql = ' FROM ' + this.tableName + where

@@ -1,7 +1,6 @@
-import { Autowired, Controller } from "../src/script-boot";
+import { Autowired, Controller,log } from "../src/script-boot";
 import Model from "../src/database/orm-decorator";
 import { GetMapping } from "../src/route-mapping.decorate";
-import { log } from "console";
 
 @Controller
 export default class UserModel extends Model{
