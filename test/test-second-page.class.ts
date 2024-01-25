@@ -19,7 +19,7 @@ export default class SecondPage {
         return "Request session view: " + req.session.view;
     }
 
-    @PostMapping("/upload")
+    @PostMapping("/second/upload")
     @Upload
     public upload(req, res) {
         const files = req.files;
@@ -27,8 +27,8 @@ export default class SecondPage {
         res.send("upload success");
     }
 
-    @PostMapping("/form")
     @Jwt({ secret: "shhhhhhared-secret", algorithms: ["HS256"] })
+    @GetMapping("/second/form")
     form(req, res) {
         res.render("upload");
     }

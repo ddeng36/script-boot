@@ -157,7 +157,7 @@ function Jwt(jwtConfig) {
         } else {
             routerMiddleware[key] = [expressjwt(jwtConfig)];
         }
-        log("@Jwt -> " + target.constructor.name + '#' + propertyKey);
+        log("@Jwt -> " + target.constructor.name + ',' + propertyKey);
         log('routerMiddleware <- { "' + key + '" : [expressjwt(jwtConfig)]}');
         log(routerMiddleware);
     }

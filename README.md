@@ -102,7 +102,7 @@ How to use reflect-metadata
 
 - @Upload: Upload file to the server.
 
-- @Jwt: Using jsonwebtoken to create jwt token.
+- @Jwt: Using jsonwebtoken to create jwt token.JWT and Upload will set callback function in routerMiddleware, while setRouter() will bind the callback function to app.
 
 - 404 & 500 pages 
 
