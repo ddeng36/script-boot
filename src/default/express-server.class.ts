@@ -42,7 +42,7 @@ export default class ExpressServer extends ServerFactory {
         this.middlewareList.push(middleware);
     }
     public start(port: number): void {
-        log(this.middlewareList);
+    log(this.middlewareList);
         this.middlewareList.forEach(middleware => {
             this.app.use(middleware);
         });
@@ -63,7 +63,7 @@ export default class ExpressServer extends ServerFactory {
         if (this.favicon) {
             // support favicon
             const faviconPath = process.cwd() + this.favicon;
-            console.log(faviconPath)
+            log(faviconPath)
             this.app.use(serveFavicon(faviconPath));
         }
         if (this.compression) {

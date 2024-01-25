@@ -6,7 +6,7 @@ import LogFactory from "./factory/log-factory.class";
 // Map
 const resourceObjects = new Map<string, object>();
 const beanMapper: Map<string, any> = new Map<string, any>();
-const objectMapper: Map<string, any> = new Map<string, any>();
+const controllerMapper: Map<string, any> = new Map<string, any>();
 
 // config 
 let globalConfig = {};
@@ -20,8 +20,7 @@ if (fs.existsSync(configPath)) {
         // config-development.json
         globalConfig = Object.assign(globalConfig, JSON.parse(fs.readFileSync(envConfigFile, "utf-8")));
     }
-    log("globalConfig: <- ".concat(fs.existsSync(envConfigFile) ? envConfigFile : configPath));
-    log(globalConfig);
+    log("globalConfig: <- ", fs.existsSync(envConfigFile) ? envConfigFile : configPath, " <- ", globalConfig);
 }
 function config(node: string) {
     return globalConfig[node] ?? {};
@@ -60,13 +59,12 @@ function ScriptBootApplication<T extends { new(...args: any[]): {} }>(constructo
 
 function Controller(constructorFunction) {
     log('@Controller -> ' + constructorFunction.name);
-    objectMapper.set(constructorFunction.name, new constructorFunction());
-    log("objectMapper: <- ");
-    log("{ "+ constructorFunction.name + ": " + objectMapper.get(constructorFunction.name) + " }");
+    controllerMapper.set(constructorFunction.name, new constructorFunction());
+    log("controllerMapper: <- { " + constructorFunction.name + ": " + constructorFunction.name + " }");
 }
 function getController(constructorFunction) {
     log("getController: <- " + constructorFunction.name);
-    return objectMapper.get(constructorFunction.name);
+    return controllerMapper.get(constructorFunction.name);
 }
 
 function Bean(target: any, propertyName: string) {
@@ -81,8 +79,7 @@ function Bean(target: any, propertyName: string) {
         "propertyKey": propertyName,
         "factory": targetObject[propertyName]()
     });
-    log("beanMapper: <- ");
-    log("{ " + returnType.name + ": " + beanMapper.get(returnType.name)["factory"] + " }");
+    log("beanMapper: <- { " + returnType.name + ": " + target.constructor.name + " }");
 }
 function getBean(mappingClass: Function): any {
     const bean = beanMapper.get(mappingClass.name);
@@ -96,6 +93,7 @@ function Resource(...args): any {
         // 1. get the type of this property.
         const type = Reflect.getMetadata("design:type", target, propertyKey);
         // 2. set getter function to the property, which will directly return the new object.
+        log('@Resource -> ' + target.constructor.name + '.' + propertyKey + ': ' + type.name);
         Object.defineProperty(target, propertyKey, {
             get: () => {
                 // Singleton 
@@ -112,7 +110,7 @@ function Resource(...args): any {
 function Autowired(target: any, propertyKey: string): void {
     // 1. get the type of this property.
     let type = Reflect.getMetadata("design:type", target, propertyKey);
-    log('@Inject -> ' + target.constructor.name + '.' + propertyKey + ': ' + type.name);
+    log('@Autowired -> ' + target.constructor.name + '.' + propertyKey + ': ' + type.name);
     // 2. set getter function to the property, which will return the bean from BeanFactory.
     // Singleton
     Object.defineProperty(target, propertyKey, {
@@ -132,45 +130,6 @@ function Autowired(target: any, propertyKey: string): void {
     })
 }
 
-/**
- * 
- * @param constructorFunction 
- * @param methodName string
- * @description To do something before the method is called.
- */
-function Before(constructorFunction, methodName: string) {
-    log("@Before -> " + constructorFunction.name + "." + methodName);
-    // 1. get the bean object
-    const targetBean = getController(constructorFunction);
-    return function (target, propertyKeys: string) {
-        // 2. get the current method of bean object
-        const currentMethod = targetBean[methodName];
-        // 3. override the method, do something before the method is called, and then call the method.
-        Object.assign(targetBean, {
-            [methodName]: function (...args) {
-                target[propertyKeys](...args);
-                log("============ Before ============")
-                currentMethod.apply(targetBean, args);
-            }
-        })
-    }
-}
-
-function After(constructorFunction, methodName: string) {
-    log("@After -> " + constructorFunction.name + "." + methodName);
-    const targetBean = getController(constructorFunction);
-    return function (target, propertyKeys: string) {
-        const currentMethod = targetBean[methodName];
-        Object.assign(targetBean, {
-            [methodName]: function (...args) {
-                const result = currentMethod.apply(targetBean, args);
-                const afterResult = target[propertyKeys](result);
-                log("============ After ============")
-                return afterResult ?? result;
-            }
-        })
-    }
-}
 function log(message?: any, ...optionalParams: any[]) {
     const logObject = beanMapper.get(LogFactory.name);
     if (logObject) {
@@ -191,7 +150,6 @@ function error(message?: any, ...optionalParams: any[]) {
 
 function Value(configPath: string): any {
     return function (target: any, propertyKey: string) {
-        log("@Value -> " + configPath);
         if (globalConfig === undefined) {
             log("undefined");
             Object.defineProperty(target, propertyKey, {
@@ -206,7 +164,7 @@ function Value(configPath: string): any {
             for (let i = 0; i < pathNodes.length; i++) {
                 nodeValue = nodeValue[pathNodes[i]];
             }
-            log(nodeValue);
+            log("@Value -> ", configPath, " <-", nodeValue);
             // 2. set the value to the property, which will return the value from config when the property is called.
             Object.defineProperty(target, propertyKey, {
                 get: () => {
@@ -219,6 +177,6 @@ function Value(configPath: string): any {
 
 export {
     ScriptBootApplication, Controller, Bean, Resource,
-    Autowired, Before, After, log, globalConfig, Value, error
+    Autowired, log, globalConfig, Value, error
     , config, getBean, getController
 };

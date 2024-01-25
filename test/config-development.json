@@ -12,7 +12,7 @@
     },
     "slave": {
       "host": "localhost",
-      "port": "3334",
+      "port": "3333",
       "database": "test",
       "user": "root",
       "password": "guang"

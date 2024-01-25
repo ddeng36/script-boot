@@ -1,16 +1,17 @@
 import { Resource, Controller, log } from "../src/script-boot";
 import { Model } from "../src/database.decorator";
-import { GetMapping } from "../src/route.decorate";
 import UserDto from "./entities/user-dto.class";
 
 @Controller
 
 export default class UserModel extends Model {
 
-
     async getUsers() {
         const users = await this.findAll({
-            id: { $lt: 100, $lte: 200 }
+            id: { $lt: 10, $lte: 20 }, "name": { $like: "test" },
+            $or: [{ id: 1 }, { id: 2 }]
+        },{
+            name: "asc"
         });
         log("users", users);
         return "getUsers";

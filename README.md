@@ -6,11 +6,21 @@
 
 ## Usage
 
+
+TODO
+Instance Management, Database Operation, Router Management, Service, Test & Publication
+
+TODO
+How to use reflect-metadata
+```
+  ts-node decorator-tutorial.ts
+```
+
 - @ScriptBootApplication: The Entrypoint of the application.
   1. Scan and load all files.
   2. Instantiate Main and then call main().
 
-- @Bean: The annotation to mark a class as bean, then save this class to the bean factory.
+- @Bean: The annotation to mark a Factory class as Bean, then put this Bean into BeanFactoryMapper
   1. Get the return type of the method in class.
   2. new the object of the return type.
   3. save the object to the bean factory.
@@ -63,6 +73,7 @@
   1. These 3 decorator will call same function -> mapperFunction.
   2. get the original function and save it in cb.
   3. put cb into routerMapper according to the method and path.
+  4. setRouter() will bind every callback function in routerMapper to the app
 
 - ExpressServer: Using Express.js to create a server, and import middlewares.
 
@@ -70,13 +81,18 @@
 
 - @OnClass/@Controller: put object to the BeanFactory.objectMapper.
 
-- @Before / @After: To do something before/after the method is called, which is so called AOP(Aspect Oriented Programming).
+- @Before / @After: To do something before/after the method is called, which is so called AOP(Aspect Oriented Programming) and Proxy Pattern. If a method has @Before and @After , then the @Before is the proxy of this method, and @After is the proxy of @Before.
   1. get the bean object.
   2. get the current method of bean object.
-  3. override the method, do something before the method is called, and then call the method.
+  3. override the method, do something before/after the method is called, and then call the original method.
 
 - @Request, @Response, @RequestQuery, @RequestBody, @RequestForm, @Next
-  1. get and directly return the value.
+  1. store the value in routerParamMap
+  2. mapperFunction() will bind the value of decorator on the param of cb function.
+- RouterParamMap: a map to store the value of request.
+```
+  routerParams <- { "FirstPage,index,0" : (req, res, next) => req}
+```
 
 - Template Engine: Use Consolidate and Mustache as Template Engine to SSR.
 

@@ -50,7 +50,6 @@ export default class ReadWriteDB extends DataSourceFactory {
 
     public readConnection() {
         // Randomly choose one
-        console.log(Math.random() * this.readSession.length)
         return this.readSession[Math.floor(Math.random() * this.readSession.length)];
     }
     public writeConnection() {

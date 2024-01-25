@@ -1,6 +1,6 @@
 import CacheFactory from './factory/cache-factory.class';
 import { createPool, ResultSetHeader } from 'mysql2';
-import { config, log,getBean } from './script-boot';
+import { config, log, getBean } from './script-boot';
 import DataSourceFactory from './factory/data-source-factory.class';
 
 const paramMetadataKey = Symbol("param");
@@ -210,7 +210,7 @@ class Model {
         if (table) this.table = table;
     }
 
-    async findAll<T>(conditions: object | string, sort: string | object ='', fields: string | [string] = '*', limit?: number | object): Promise<T[]> {
+    async findAll<T>(conditions: object | string, sort: string | object = '', fields: string | [string] = '*', limit?: number | object): Promise<T[]> {
         const { sql, values } = this.where(conditions);
         if (typeof fields !== 'string') {
             fields = fields.join(", ");
@@ -346,13 +346,11 @@ class Model {
                         result["sql"] += `(${orSql})`;
                     } else {
                         const operatorTemplate = { $lt: "<", $lte: "<=", $gt: ">", $gte: ">=", $ne: "!=", $like: "LIKE" };
-                        let firstCondition: boolean = Object.keys(conditions[field]).length > 1;
-                        Object.keys(conditions[field]).map((operator) => {
+                        Object.keys(conditions[field]).map((operator, index) => {
                             if (operatorTemplate[operator]) {
                                 const operatorValue = operatorTemplate[operator];
-                                result["sql"] += ` ${field} ${operatorValue} ? ` + (firstCondition ? " AND " : "");
+                                result["sql"] += (index ? " AND " : "") + ` ${field} ${operatorValue} ? `;
                                 result["values"].push(conditions[field][operator]);
-                                firstCondition = false;
                             }
                         });
                     }
@@ -371,4 +369,4 @@ class Model {
         return [...Array(end - start + 1).keys()].map(i => i + start);
     }
 }
-export { Insert, Update, Delete, Select, Param, ResultType, Cache, Model};
+export { Insert, Update, Delete, Select, Param, ResultType, Cache, Model };

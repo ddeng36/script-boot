@@ -1,8 +1,7 @@
 import { RabbitMQ, RabbitListener } from "../src/default/rabbitmq.class";
 import { GetMapping } from "../src/route.decorate";
-import { Autowired, Controller } from "../src/script-boot";
+import { Autowired, Controller, log } from "../src/script-boot";
 import { connect } from "amqplib";
-import { log } from "console";
 @Controller
 export default class TestMq {
 
@@ -27,7 +26,7 @@ export default class TestMq {
         const channel = await connection.createChannel();
         await channel.checkQueue(queue);
         channel.sendToQueue(queue, Buffer.from(text));
-        console.log(" [x] Sent %s", text);
+        log(" [x] Sent %s", text);
         await channel.close();
         return "Send success";
     }
@@ -40,7 +39,7 @@ export default class TestMq {
         const channel = await connection.createChannel();
         await channel.checkExchange(exchange);
         channel.publish(exchange, '', Buffer.from(text));
-        console.log(" [x] Publish by exchange '%s'", text);
+        log(" [x] Publish by exchange '%s'", text);
         await channel.close();
         return "sent by exchange";
     }
@@ -54,10 +53,10 @@ export default class TestMq {
         await channel.checkQueue(queue);
         await channel.checkQueue(queue2);
         await channel.consume(queue, (message) => {
-            console.log(" [x] Received queue1'%s'", message.content.toString());
+            log(" [x] Received queue1'%s'", message.content.toString());
         }, { noAck: true });
         await channel.consume(queue2, (message) => {
-            console.log(" [x] Received queue2 '%s'", message.content.toString());
+            log(" [x] Received queue2 '%s'", message.content.toString());
         }, { noAck: true });
         return "ok";
     }

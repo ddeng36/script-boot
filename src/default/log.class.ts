@@ -1,6 +1,6 @@
-import { Bean } from "../src/script-boot";
+import { Bean } from "../script-boot";
 import * as tracer from "tracer";
-import LogFactory from "../src/factory/log-factory.class";
+import LogFactory from "../factory/log-factory.class";
 
 export default class CustomLog extends LogFactory {
     private logger = tracer.console({

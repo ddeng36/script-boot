@@ -1,13 +1,13 @@
-import { Before, log, Controller, After } from "../src/script-boot";
-import FirstPage from "./first-page.class";
+import { log, Controller} from "../src/script-boot";
+import { Before, After } from "../src/route.decorate";
+import FirstPage from "./test-first-page.class";
 
 @Controller
 export default class AopTest {
 
     @Before(FirstPage, "index")
     public FirstIndex() {
-        log("Before FirstPage index run, at AopTest FirstIndex.");
-        log("AopTest FirstIndex run over." + this.getWordsFromAopTest());
+        log("Before FirstPage index run, at AopTest FirstIndex, and", this.getWordsFromAopTest());
         return "FirstIndex";
     }
 

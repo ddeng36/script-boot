@@ -8,11 +8,11 @@ export default class FirstPage {
 
     @GetMapping("/first")
     public index(@Request req: any, res: any) {
-        log("FirstPage index running: " + this.test());
+        log("FirstPage index running: " + this.getTestFromFirstPage());
         res.send("FirstPage index running");
     }
 
-    public test() {
+    public getTestFromFirstPage() {
         return "FirstPage test running";
     }
 
@@ -36,7 +36,7 @@ export default class FirstPage {
         return "sendResult";
     }
 
-    @GetMapping("/login")
+    @GetMapping("/first/login")
     login() {
         const token = jwttoken.sign({ foo: 'bar' }, 'shhhhhhared-secret');
         return token;
