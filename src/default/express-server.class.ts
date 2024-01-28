@@ -28,8 +28,8 @@ export default class ExpressServer extends ServerFactory {
     @Value("session")
     private session: object;
 
-    @Autowired
-    public authentication: AuthenticationFactory;
+    // @Autowired
+    // public authentication: AuthenticationFactory;
 
     @Bean
     public getServer(): ServerFactory {
@@ -84,7 +84,7 @@ export default class ExpressServer extends ServerFactory {
         // set cookie
         this.app.use(cookieParser(this.cookieConfig["secret"] || undefined, this.cookieConfig["options"] || {}));
 
-        this.app.use(this.authentication.preHandle);
+        // this.app.use(this.authentication.preHandle);
         // Making sure that the static file need authentication
         if (this.static) {
             // Use static file
@@ -93,7 +93,7 @@ export default class ExpressServer extends ServerFactory {
         }
         // init router, set app.get, app.post, app.all to call the function in routerMapper
         setRouter(this.app);
-        this.app.use(this.authentication.postHandle);
+        // this.app.use(this.authentication.postHandle);
 
         // 404 handler
         this.app.use((req, res, next) => {

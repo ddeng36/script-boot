@@ -1,14 +1,37 @@
 import { log } from "console";
 import { Delete, Insert, Param, Select, Update, ResultType, Cache } from "../src/database.decorator";
-import { GetMapping } from "../src/route.decorate";
-import { Autowired, Controller } from "../src/script-boot";
+import { GetMapping, RequestQuery,Response } from "../src/route.decorate";
+import { Autowired, Controller, config, getBean } from "../src/script-boot";
 import UserDto from "./entities/user-dto.class";
 import CacheFactory from "../src/factory/cache-factory.class";
+import { createPool, ResultSetHeader, RowDataPacket } from 'mysql2';
+import DataSourceFactory from "../src/factory/data-source-factory.class";
 
 @Controller
 export default class TestDatabase {
     @Autowired
     private cacheBean: CacheFactory;
+
+    // http://localhost:8080/sql/injection?username=zzz&password=123' or '1'='1
+    @GetMapping("/db/injection")
+    async selectSql(@RequestQuery username, @RequestQuery password, @Response res) {
+        const sql = "Select * from `check_user` where `username` = '" + username + "' and `password` = '" + password + "'";
+        log("test sql: " + sql);
+        const writeConnection = await getBean(DataSourceFactory).writeConnection();
+        const [rows] = await writeConnection.query(sql);
+        if ((rows as RowDataPacket[]).length == 0) {
+            res.send("fail");
+        } else {
+            res.send("success! " + rows[0].name);
+        }
+    }
+    @GetMapping("/db/prevent-injection")
+    async selectSql3(@RequestQuery name, @RequestQuery id, @Response res) {
+        const result = await this.selectSql2(name, id);
+        log("test sql: " + result);
+        res.send(result);
+    }
+
 
     @GetMapping("/db/insert")
     async insert(req, res) {
@@ -21,7 +44,7 @@ export default class TestDatabase {
     @GetMapping("/db/insertObject")
     async insertByObject(req, res) {
         const newId = await this.addRowByObject({
-            "id": 35,
+            "id": 31,
             "name": "newname2"
         })
         log("Insert newId: " + newId);
@@ -70,6 +93,9 @@ export default class TestDatabase {
         const value = this.cacheBean.get("test");
         res.send(value);
     }
+
+    @Select("Select * from `user` where `name` = #{name} and `id` = #{id}")
+    private async selectSql2(@Param("name") name: string, @Param("id") id: string) { }
 
     @Insert("Insert into `user` (id, name) values (#{id}, #{name})")
     private async addRow(@Param("name") newName: string, @Param("id") id: number) { }

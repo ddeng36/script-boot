@@ -15,6 +15,7 @@ function Insert(sql: string) {
     return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
         log("@Insert -> " + target.constructor.name + "." + propertyKey);
         descriptor.value = async (...args: any[]) => {
+            // 2. execute queryFunction(sql) when old function is called
             const result: ResultSetHeader = await queryForExecute(sql, args, target, propertyKey);
             if (cacheBean && result.affectedRows > 0) {
                 const [tableName, tableVersion] = getTableAndVersion("insert", sql);
@@ -31,7 +32,7 @@ function Insert(sql: string) {
 
 function Update(sql: string) {
     return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-        log("@Update/@Delete -> " + target.constructor.name + "." + propertyKey);
+        log("@Update -> " + target.constructor.name + "." + propertyKey);
         descriptor.value = async (...args: any[]) => {
             const result: ResultSetHeader = await queryForExecute(sql, args, target, propertyKey);
             if (cacheBean && result.affectedRows > 0) {
@@ -48,6 +49,7 @@ function Update(sql: string) {
 }
 function Delete(sql: string) {
     return (target, propertyKey: string, descriptor: PropertyDescriptor) => {
+        log("@Delete -> " + target.constructor.name + "." + propertyKey);
         descriptor.value = async (...args: any[]) => {
             const result: ResultSetHeader = await queryForExecute(sql, args, target, propertyKey);
             if (cacheBean && result.affectedRows > 0) {
@@ -126,8 +128,8 @@ async function actionQuery(newSql, sqlValues, dataClassType?) {
     }
     const records = [];
     for (const rowIndex in rows) {
-        const entity = new dataClassType();
-        Object.getOwnPropertyNames(entity).forEach((propertyRow) => {
+        const entity = Object.create(dataClassType);
+        Object.getOwnPropertyNames(dataClassType).forEach((propertyRow) => {
             if (rows[rowIndex].hasOwnProperty(propertyRow)) {
                 Object.defineProperty(entity, propertyRow, Object.getOwnPropertyDescriptor(rows[rowIndex], propertyRow));
             }
@@ -170,7 +172,7 @@ function Cache(ttl: number) {
         if (cacheBean == null) {
             const cacheFactory = getBean(CacheFactory);
             if (cacheFactory || cacheFactory['factory']) {
-                cacheBean = cacheFactory['factory'];
+                cacheBean = cacheFactory;
             }
         }
         log("cacheDefinedMap: <- ");

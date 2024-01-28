@@ -49,7 +49,7 @@ How to use reflect-metadata
 - @Autowird/@Resource: **Directly new a object with parameters**,**Design pattern: Singleton**. The implementation of Dependency Injection and Inversion of Control.
 
 - RouterMapper: Mapping the route to related callback function.
-  ```
+```
   {
     get: {
     '/first': {
@@ -67,13 +67,13 @@ How to use reflect-metadata
   },
   all: {}
 }
-  ```
+```
 
 - @GetMapping(path: string) / @PostMapping(path: string) / @RequestMapping(path: string): call relative cb function according to the path.
   1. These 3 decorator will call same function -> mapperFunction.
   2. get the original function and save it in cb.
   3. put cb into routerMapper according to the method and path.
-  4. setRouter() will bind every callback function in routerMapper to the app
+  4. setRouter() will bind every callback function(invoker, a kind of middleware) and middlewares in routerMapper to the app.
 
 - ExpressServer: Using Express.js to create a server, and import middlewares.
 
@@ -131,7 +131,7 @@ Insert, Update, Delete could affect the database, so the result of Select in the
 ```
   Map(1) { 'user' => 2 }
 ```
-@Cache
+@Cache: To cache the result of sql query. We could use this Decorator to cache the result of sql query, or we can directly use the cache in service by calling setCache() and getCache().
 
 ORM: Object Relational Mapping, map the object to table. Developers don't need to write sql query. It's different from @Select, because it's not a sql query.
 
