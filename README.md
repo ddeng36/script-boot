@@ -13,8 +13,14 @@ Instance Management, Database Operation, Router Management, Service, Test & Publ
 TODO
 How to use reflect-metadata
 ```
-  ts-node decorator-tutorial.ts
+  ts-node tutorial-decorator.ts
 ```
+How to use event-emitter
+```
+  ts-node tutorial-eventEmitter.ts
+```
+- @RedisSubscriber: Subscribe to Redis channel.
+- @SocketIO: enable Socket.IO between client and server.
 
 - @ScriptBootApplication: The Entrypoint of the application.
   1. Scan and load all files.

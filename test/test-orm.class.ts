@@ -24,7 +24,6 @@ export default class TestOrm {
 
     @GetMapping("/orm/delete")
     async deleteTest(req, res) {
-        log(this.userModel);
         const results = await this.userModel.remove(req.query.id || 0);
         res.send("remove user, results: " + results);
     }
@@ -38,7 +37,6 @@ export default class TestOrm {
 
     @GetMapping("/orm/new")
     async newUserTest(req, res) {
-        log(this.userModel);
         const results = await this.userModel.newUsers();
         res.send("new user test, to " + results);
     }
@@ -64,4 +62,5 @@ export default class TestOrm {
         const results = await this.userModel.editUser(req.body.id, req.body.name);
         res.send(results);
     }
+
 }

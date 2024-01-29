@@ -18,12 +18,17 @@
       "password": "guang"
     }
   },
-  "rabbitmq":{
+  "rabbitmq": {
     "port": "5670"
   },
   "view": {
     "engine": "mustache",
     "path": "/test/view",
     "suffix": "html"
+  },
+  "redis": {
+    "host": "localhost",
+    "port": "6666",
+    "db": "0"
   }
 }

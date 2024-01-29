@@ -8,6 +8,7 @@ import * as express from "express";
 import * as consolidate from "consolidate";
 import * as serveFavicon from "serve-favicon";
 import * as expressSession from "express-session";
+import { SocketIo } from "./socket-io.class";
 
 export default class ExpressServer extends ServerFactory {
     @Value("view")
@@ -47,9 +48,11 @@ export default class ExpressServer extends ServerFactory {
             this.app.use(middleware);
         });
         this.setDefaultMiddleware();
-        this.app.listen(port, () => {
-            log(`Server is running on port ${port}`);
-        })
+        // this.app.listen(port, () => {
+        //     log(`Server is running on port ${port}`);
+        // })
+        const newSocketApp = SocketIo.setIoServer(this.app, { cors: { origin: "*" } });
+        newSocketApp.listen(port);
     }
     setDefaultMiddleware() {
         if (this.view) {

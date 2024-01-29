@@ -8,9 +8,10 @@ export default class UserModel extends Model {
 
     async getUsers() {
         const users = await this.findAll({
-            id: { $lt: 10, $lte: 20 }, "name": { $like: "test" },
+            id: { $lt: 10, $lte: 20 },
+            "name": { $like: "test" },
             $or: [{ id: 1 }, { id: 2 }]
-        },{
+        }, {
             name: "asc"
         });
         log("users", users);
@@ -26,7 +27,6 @@ export default class UserModel extends Model {
     async newUsers() {
         const users = await this.create([
             new UserDto(30, "UserDto 30"),
-            new UserDto(31, "UserDto 31"),
             { id: 33, name: "UserDto 33" }
         ]);
         return "newUsers";
