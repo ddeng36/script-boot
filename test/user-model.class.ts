@@ -8,20 +8,22 @@ export default class UserModel extends Model {
 
     async getUsers() {
         const users = await this.findAll({
-            id: { $lt: 10, $lte: 20 },
+            id: { $lte: 20 },
             "name": { $like: "test" },
             $or: [{ id: 1 }, { id: 2 }]
         }, {
             name: "asc"
         });
         log("users", users);
-        return "getUsers";
+        return users;
     }
 
     async getUser(id: number) {
-        const user = await this.find({ id: id }, "");
+        const user = await this.find({ id: id }, {
+            name: "asc"
+        });
         log("user", user);
-        return "getUser";
+        return user;
     }
 
     async newUsers() {

@@ -22,7 +22,7 @@ export default class TestMq {
     async sendMq() {
         const queue = 'myqueues';
         const text = 'hello world';
-        const connection = await connect('amqp://localhost:5670');
+        const connection = await connect('amqp://localhost:5672');
         const channel = await connection.createChannel();
         await channel.checkQueue(queue);
         channel.sendToQueue(queue, Buffer.from(text));
@@ -35,7 +35,7 @@ export default class TestMq {
     async sendMq2() {
         const exchange = 'myexchanges';
         const text = "hello world, by exchange";
-        const connection = await connect('amqp://localhost:5670');
+        const connection = await connect('amqp://localhost:5672');
         const channel = await connection.createChannel();
         await channel.checkExchange(exchange);
         channel.publish(exchange, '', Buffer.from(text));
@@ -46,7 +46,7 @@ export default class TestMq {
     
     @GetMapping("/mq/listen")
     async testMq() {
-        const connection = await connect('amqp://localhost:5670');
+        const connection = await connect('amqp://localhost:5672');
         const channel = await connection.createChannel();
         const queue = 'myqueues';
         const queue2 = 'myqueues2';

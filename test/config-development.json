@@ -19,7 +19,7 @@
     }
   },
   "rabbitmq": {
-    "port": "5670"
+    "port": "5672"
   },
   "view": {
     "engine": "mustache",
@@ -28,7 +28,7 @@
   },
   "redis": {
     "host": "localhost",
-    "port": "6666",
+    "port": "6379",
     "db": "0"
   }
 }

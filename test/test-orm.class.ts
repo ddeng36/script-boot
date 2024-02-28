@@ -12,14 +12,14 @@ export default class TestOrm {
     async firstTest(req, res) {
         log(this.userModel);
         const results = await this.userModel.getUsers();
-        res.send("first test, to " + results);
+        res.send(results);
     }
 
     @GetMapping("/orm/one")
     async findOneTest(req, res) {
         log(this.userModel);
         const results = await this.userModel.getUser(req.query.id || 0);
-        res.send("find one test, to " + results);
+        res.send( results);
     }
 
     @GetMapping("/orm/delete")

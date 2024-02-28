@@ -58,7 +58,7 @@ ts-node tutorial-eventEmitter.ts
 - @Autowird/@Resource: **Directly new a object with parameters**,**Design pattern: Singleton**. The implementation of Dependency Injection and Inversion of Control.
 
 
-- @OnClass/@Controller: put object to the BeanFactory.objectMapper.
+- @OnClass/@Controller: put object to the controllerMapper.
 
 - @Before / @After: To do something before/after the method is called, which is so called AOP(Aspect Oriented Programming) and Proxy Pattern. If a method has @Before and @After , then the @Before is the proxy of this method, and @After is the proxy of @Before.
   1. get the bean object.

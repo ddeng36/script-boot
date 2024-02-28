@@ -71,7 +71,7 @@ function Bean(target: any, propertyName: string) {
     // 1. get the return type of this method.
     let returnType = Reflect.getMetadata("design:returntype", target, propertyName);
     log('@Bean -> { ' + returnType.name + ': ' + target.constructor.name + '.' + propertyName + '() }');
-    // 2. new the object of the return type.
+    // 2. new the object of the return type. target.property could only be called after the object is created.
     const targetObject = new target.constructor();
     // 3. put the object into BeanFactory.
     beanMapper.set(returnType.name, {

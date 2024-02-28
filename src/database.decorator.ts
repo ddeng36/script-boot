@@ -259,7 +259,7 @@ class Model {
         return result.insertId;
     }
 
-    async find<T>(conditions, sort, fields = '*'): Promise<T> {
+    async find<T>(conditions, sort: string | object = '', fields = '*'): Promise<T> {
         const result = await this.findAll(conditions, sort, fields, 1);
         return result.length > 0 ? <T>result[0] : null;
     }
