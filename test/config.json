@@ -5,17 +5,17 @@
   "database": {
     "master": {
       "host": "localhost",
-      "port": "3333",
-      "name": "test",
+      "port": "3306",
+      "database": "test",
       "user": "root",
-      "password": "guang"
+      "password": "ddeng36"
     },
     "slave": {
       "host": "localhost",
-      "port": "3334",
-      "name": "test",
+      "port": "3307",
+      "database": "test",
       "user": "root",
-      "password": "guang"
+      "password": "ddeng36"
     }
   },
   "view": {
@@ -43,8 +43,8 @@
     }
   },
   "jwt": {
-    "secret": "shhhhhhared-secret",
+    "secret": "ddeng36",
     "algorithms": ["HS256"],
-    "ignore": [ "/second/testSession", "/sql/injection"]
+    "ignore": ["/second/testSession", "/sql/injection"]
   }
 }
